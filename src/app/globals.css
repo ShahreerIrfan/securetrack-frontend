@@ -7,6 +7,9 @@
   --color-border: #232b39;
   --color-foreground: #e6edf3;
   --color-muted: #8b98a5;
+  /* lighter body-copy gray from the SecureTrack marketing design (#C9D1D9) -
+     distinct from --color-muted, which is for de-emphasized dashboard UI */
+  --color-copy: #c9d1d9;
 
   --color-accent: #00ff9c;
   --color-accent-blue: #00c2ff;
@@ -22,6 +25,7 @@
   --color-border: var(--color-border);
   --color-foreground: var(--color-foreground);
   --color-muted: var(--color-muted);
+  --color-copy: var(--color-copy);
   --color-accent: var(--color-accent);
   --color-accent-blue: var(--color-accent-blue);
   --color-danger: var(--color-danger);
