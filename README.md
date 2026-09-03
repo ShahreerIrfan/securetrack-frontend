@@ -1,36 +1,67 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# SecureTrack — Frontend
 
-## Getting Started
+Next.js (App Router) frontend for SecureTrack, a vulnerability/incident
+report tracking system with JWT authentication and 4 user roles: User,
+Analyst, Developer, Admin.
 
-First, run the development server:
+Paired backend: https://github.com/ShahreerIrfan/securetrack-backend
+
+## Stack
+
+- Next.js 16 (App Router, TypeScript)
+- Tailwind CSS v4
+- Zustand (auth state, persisted to localStorage)
+- axios (with a refresh-on-401 interceptor)
+- recharts (dashboard charts)
+
+## Local setup
+
+The backend must be running first — see its own README for setup
+(`python manage.py runserver`, default `http://localhost:8000/`).
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000). Register an account
+from the UI, or use a superuser created on the backend (promoted to
+`role="admin"` per the backend README) to log in with full access.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Environment variables
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Copy `.env.example` to `.env.local` and adjust if your backend isn't on
+the default local address:
 
-## Learn More
+| Variable | Default | Purpose |
+|---|---|---|
+| `NEXT_PUBLIC_API_URL` | `http://localhost:8000/api` | Base URL the frontend calls for the backend API. Public (`NEXT_PUBLIC_`) because it's used from the browser, and is baked into the client bundle at build time — set it before `npm run build` for a non-local deploy, not after. |
 
-To learn more about Next.js, take a look at the following resources:
+No other environment variables are required; there are no other secrets
+on the frontend (the JWT itself lives in the browser's localStorage, not
+in build-time config).
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Structure
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```
+src/
+  app/            routes only - pages compose components, no raw markup
+  components/
+    ui/           theme-agnostic primitives (Button, Table, Modal, ...)
+    layout/       Navbar/Footer (marketing) and Sidebar/Topbar (dashboard)
+    marketing/    homepage/contact/features sections
+    auth/         AuthForm, ProtectedRoute
+    reports/      report-domain components (form, table, badges, actions)
+    dashboard/    shared building blocks for all 4 role dashboards
+    accounts/     admin user-management components
+  lib/            api client, error helpers
+  store/          Zustand auth store
+  types/          shared TypeScript types matching the backend's API shape
+```
 
-## Deploy on Vercel
+## Build
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+npm run build
+npm run start
+```
