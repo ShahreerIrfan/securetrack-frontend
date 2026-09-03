@@ -5,6 +5,7 @@ import { Table, TableColumn } from "@/components/ui/Table";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Select } from "@/components/ui/Select";
+import { formatUserName } from "@/lib/format";
 import type { UserRole } from "@/store/authStore";
 import type { AdminUser } from "@/types/user";
 
@@ -25,7 +26,7 @@ export function UserTable({ users, onRoleChange, onDelete }: UserTableProps) {
   const [editingId, setEditingId] = useState<number | null>(null);
 
   const columns: TableColumn<AdminUser>[] = [
-    { key: "username", header: "Username" },
+    { key: "name", header: "Name", render: (u) => formatUserName(u) },
     { key: "email", header: "Email" },
     {
       key: "role",

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { api } from "@/lib/api";
 import { extractErrorMessage } from "@/lib/errors";
+import { formatUserName } from "@/lib/format";
 import type { Comment } from "@/types/report";
 
 export interface CommentThreadProps {
@@ -45,7 +46,7 @@ export function CommentThread({ reportId, comments, onCommentAdded }: CommentThr
             <li key={comment.id} className="rounded-lg border border-border bg-surface p-4">
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium text-foreground">
-                  {comment.author.username}
+                  {formatUserName(comment.author)}
                 </span>
                 <span className="text-xs text-muted">
                   {new Date(comment.created_at).toLocaleString()}

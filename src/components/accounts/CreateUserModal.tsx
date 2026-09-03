@@ -23,7 +23,13 @@ const roleOptions: { value: UserRole; label: string }[] = [
   { value: "admin", label: "Admin" },
 ];
 
-const initial = { username: "", email: "", password: "", role: "user" as UserRole };
+const initial = {
+  first_name: "",
+  last_name: "",
+  email: "",
+  password: "",
+  role: "user" as UserRole,
+};
 
 export function CreateUserModal({ isOpen, onClose, onCreated }: CreateUserModalProps) {
   const toast = useToast();
@@ -43,7 +49,7 @@ export function CreateUserModal({ isOpen, onClose, onCreated }: CreateUserModalP
     setSubmitting(true);
     try {
       await api.post("/auth/users/", values);
-      toast.success(`User "${values.username}" created`);
+      toast.success(`User "${values.first_name} ${values.last_name}" created`);
       onCreated();
       handleClose();
     } catch (err) {
@@ -56,16 +62,29 @@ export function CreateUserModal({ isOpen, onClose, onCreated }: CreateUserModalP
   return (
     <Modal isOpen={isOpen} onClose={handleClose} title="Create User">
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label htmlFor="new-username" className="mb-1.5 block text-sm text-copy">
-            Username
-          </label>
-          <Input
-            id="new-username"
-            required
-            value={values.username}
-            onChange={(e) => setValues((v) => ({ ...v, username: e.target.value }))}
-          />
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div>
+            <label htmlFor="new-first-name" className="mb-1.5 block text-sm text-copy">
+              First Name
+            </label>
+            <Input
+              id="new-first-name"
+              required
+              value={values.first_name}
+              onChange={(e) => setValues((v) => ({ ...v, first_name: e.target.value }))}
+            />
+          </div>
+          <div>
+            <label htmlFor="new-last-name" className="mb-1.5 block text-sm text-copy">
+              Last Name
+            </label>
+            <Input
+              id="new-last-name"
+              required
+              value={values.last_name}
+              onChange={(e) => setValues((v) => ({ ...v, last_name: e.target.value }))}
+            />
+          </div>
         </div>
         <div>
           <label htmlFor="new-email" className="mb-1.5 block text-sm text-copy">

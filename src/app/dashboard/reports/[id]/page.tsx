@@ -11,6 +11,7 @@ import { ReportActions } from "@/components/reports/ReportActions";
 import { Tabs } from "@/components/ui/Tabs";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { api } from "@/lib/api";
+import { formatUserName } from "@/lib/format";
 import { useAuthStore } from "@/store/authStore";
 import type { ActivityLogEntry, Comment, Report } from "@/types/report";
 
@@ -55,8 +56,8 @@ export default function ReportDetailPage(props: PageProps<"/dashboard/reports/[i
               <h1 className="mt-3 text-2xl font-bold text-foreground">{report.title}</h1>
               <p className="mt-2 text-sm text-copy">{report.description}</p>
               <p className="mt-3 text-xs text-muted">
-                Reported by {report.created_by.username}
-                {report.assigned_to && ` · Assigned to ${report.assigned_to.username}`}
+                Reported by {formatUserName(report.created_by)}
+                {report.assigned_to && ` · Assigned to ${formatUserName(report.assigned_to)}`}
               </p>
             </div>
 

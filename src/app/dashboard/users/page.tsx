@@ -11,6 +11,7 @@ import { CreateUserModal } from "@/components/accounts/CreateUserModal";
 import { UserTable } from "@/components/accounts/UserTable";
 import { api } from "@/lib/api";
 import { extractErrorMessage } from "@/lib/errors";
+import { formatUserName } from "@/lib/format";
 import type { UserRole } from "@/store/authStore";
 import type { AdminUser } from "@/types/user";
 
@@ -38,7 +39,7 @@ export default function UsersPage() {
   const handleRoleChange = async (targetUser: AdminUser, role: UserRole) => {
     try {
       await api.patch(`/auth/users/${targetUser.id}/`, { role });
-      toast.success(`${targetUser.username}'s role updated to "${role}"`);
+      toast.success(`${formatUserName(targetUser)}'s role updated to "${role}"`);
       fetchUsers();
     } catch (err) {
       toast.error(extractErrorMessage(err));
@@ -46,10 +47,10 @@ export default function UsersPage() {
   };
 
   const handleDelete = async (targetUser: AdminUser) => {
-    if (!confirm(`Delete user "${targetUser.username}"? This cannot be undone.`)) return;
+    if (!confirm(`Delete user "${formatUserName(targetUser)}"? This cannot be undone.`)) return;
     try {
       await api.delete(`/auth/users/${targetUser.id}/`);
-      toast.success(`User "${targetUser.username}" deleted`);
+      toast.success(`User "${formatUserName(targetUser)}" deleted`);
       fetchUsers();
     } catch (err) {
       toast.error(extractErrorMessage(err));

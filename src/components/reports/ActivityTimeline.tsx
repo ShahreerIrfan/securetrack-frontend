@@ -1,5 +1,6 @@
 import { Activity } from "lucide-react";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { formatUserName } from "@/lib/format";
 import type { ActivityLogEntry } from "@/types/report";
 
 export function ActivityTimeline({ entries }: { entries: ActivityLogEntry[] }) {
@@ -16,7 +17,7 @@ export function ActivityTimeline({ entries }: { entries: ActivityLogEntry[] }) {
           </span>
           <div>
             <p className="text-sm text-foreground">
-              <span className="font-medium">{entry.actor.username}</span> {entry.detail}
+              <span className="font-medium">{formatUserName(entry.actor)}</span> {entry.detail}
             </p>
             <p className="mt-0.5 text-xs text-muted">
               {new Date(entry.created_at).toLocaleString()}

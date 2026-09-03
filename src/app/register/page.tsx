@@ -6,7 +6,8 @@ import { api } from "@/lib/api";
 import { extractErrorMessage } from "@/lib/errors";
 
 const fields: AuthFormField[] = [
-  { name: "username", label: "Username", type: "text", autoComplete: "username" },
+  { name: "first_name", label: "First Name", type: "text", autoComplete: "given-name" },
+  { name: "last_name", label: "Last Name", type: "text", autoComplete: "family-name" },
   { name: "email", label: "Email", type: "email", autoComplete: "email" },
   { name: "password", label: "Password", type: "password", autoComplete: "new-password" },
 ];
@@ -17,7 +18,8 @@ export default function RegisterPage() {
   const handleSubmit = async (values: Record<string, string>) => {
     try {
       await api.post("/auth/register/", {
-        username: values.username,
+        first_name: values.first_name,
+        last_name: values.last_name,
         email: values.email,
         password: values.password,
       });

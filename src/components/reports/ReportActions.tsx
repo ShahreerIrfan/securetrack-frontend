@@ -7,6 +7,7 @@ import { Select } from "@/components/ui/Select";
 import { useToast } from "@/components/ui/ToastProvider";
 import { api } from "@/lib/api";
 import { extractErrorMessage } from "@/lib/errors";
+import { formatUserName } from "@/lib/format";
 import type { NestedUser, Report, ReportStatus } from "@/types/report";
 import type { UserRole } from "@/store/authStore";
 import { statusLabels } from "./labels";
@@ -129,7 +130,7 @@ export function ReportActions({
             <option value="">Assign to developer...</option>
             {developers.map((dev) => (
               <option key={dev.id} value={dev.id}>
-                {dev.username}
+                {formatUserName(dev)}
               </option>
             ))}
           </Select>

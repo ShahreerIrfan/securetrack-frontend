@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { LogOut } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
+import { formatUserName } from "@/lib/format";
 import { useAuthStore } from "@/store/authStore";
 
 export interface TopbarProps {
@@ -25,7 +26,7 @@ export function Topbar({ title }: TopbarProps) {
       <div className="flex items-center gap-3">
         {user && (
           <>
-            <span className="text-sm text-foreground">{user.username}</span>
+            <span className="text-sm text-foreground">{formatUserName(user)}</span>
             <Badge variant={user.role}>{user.role}</Badge>
           </>
         )}

@@ -3,7 +3,9 @@ export type ReportStatus = "new" | "in_review" | "verified" | "assigned" | "reso
 
 export interface NestedUser {
   id: number;
-  username: string;
+  email: string;
+  first_name: string;
+  last_name: string;
   role: string;
 }
 
