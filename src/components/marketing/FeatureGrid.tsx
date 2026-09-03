@@ -1,7 +1,7 @@
 import { ClipboardList, Clock, Lock, ShieldCheck } from "lucide-react";
-import { FeatureCard } from "./FeatureCard";
+import { FeatureCard, type FeatureCardProps } from "./FeatureCard";
 
-const features = [
+export const defaultFeatures: FeatureCardProps[] = [
   {
     icon: <ShieldCheck size={22} />,
     title: "Report Vulnerabilities",
@@ -24,16 +24,30 @@ const features = [
   },
 ];
 
-export function FeatureGrid() {
+export interface FeatureGridProps {
+  title?: string;
+  subtitle?: string;
+  features?: FeatureCardProps[];
+  /** Set false when the page already renders its own heading above this
+   * grid (e.g. the Features page), to avoid a second, redundant one. */
+  showHeading?: boolean;
+}
+
+export function FeatureGrid({
+  title = "Everything your security team needs",
+  subtitle = "One workflow from first report to final fix.",
+  features = defaultFeatures,
+  showHeading = true,
+}: FeatureGridProps) {
   return (
     <section className="bg-background py-24">
       <div className="mx-auto max-w-7xl px-6 lg:px-10">
-        <h2 className="text-center text-[34px] font-bold text-white">
-          Everything your security team needs
-        </h2>
-        <p className="mt-3 text-center text-[15px] text-copy">
-          One workflow from first report to final fix.
-        </p>
+        {showHeading && (
+          <>
+            <h2 className="text-center text-[34px] font-bold text-white">{title}</h2>
+            <p className="mt-3 text-center text-[15px] text-copy">{subtitle}</p>
+          </>
+        )}
 
         <div className="mt-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {features.map((feature) => (
