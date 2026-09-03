@@ -17,7 +17,7 @@ export interface TableProps<T> {
   className?: string;
 }
 
-export function Table<T extends Record<string, unknown>>({
+export function Table<T>({
   columns,
   data,
   getRowKey,
@@ -56,7 +56,9 @@ export function Table<T extends Record<string, unknown>>({
               >
                 {columns.map((col) => (
                   <td key={col.key} className={clsx("px-4 py-3 text-foreground", col.className)}>
-                    {col.render ? col.render(row) : String(row[col.key] ?? "")}
+                    {col.render
+                      ? col.render(row)
+                      : String((row as Record<string, unknown>)[col.key] ?? "")}
                   </td>
                 ))}
               </tr>
