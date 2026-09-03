@@ -3,13 +3,14 @@
 import { useEffect, useState } from "react";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
-import { Table, TableColumn } from "@/components/ui/Table";
-import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Select } from "@/components/ui/Select";
 import { Skeleton } from "@/components/ui/Skeleton";
+import { useToast } from "@/components/ui/ToastProvider";
 import { CreateUserModal } from "@/components/accounts/CreateUserModal";
+import { UserTable } from "@/components/accounts/UserTable";
 import { api } from "@/lib/api";
+import { extractErrorMessage } from "@/lib/errors";
 import type { UserRole } from "@/store/authStore";
 import type { AdminUser } from "@/types/user";
 
@@ -21,9 +22,9 @@ const roleOptions: { value: UserRole; label: string }[] = [
 ];
 
 export default function UsersPage() {
+  const toast = useToast();
   const [users, setUsers] = useState<AdminUser[] | null>(null);
   const [roleFilter, setRoleFilter] = useState<UserRole | "">("");
-  const [editingId, setEditingId] = useState<number | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
 
   const fetchUsers = () => {
@@ -35,71 +36,28 @@ export default function UsersPage() {
   useEffect(fetchUsers, [roleFilter]);
 
   const handleRoleChange = async (targetUser: AdminUser, role: UserRole) => {
-    await api.patch(`/auth/users/${targetUser.id}/`, { role });
-    setEditingId(null);
-    fetchUsers();
+    try {
+      await api.patch(`/auth/users/${targetUser.id}/`, { role });
+      toast.success(`${targetUser.username}'s role updated to "${role}"`);
+      fetchUsers();
+    } catch (err) {
+      toast.error(extractErrorMessage(err));
+    }
   };
 
   const handleDelete = async (targetUser: AdminUser) => {
     if (!confirm(`Delete user "${targetUser.username}"? This cannot be undone.`)) return;
-    await api.delete(`/auth/users/${targetUser.id}/`);
-    fetchUsers();
+    try {
+      await api.delete(`/auth/users/${targetUser.id}/`);
+      toast.success(`User "${targetUser.username}" deleted`);
+      fetchUsers();
+    } catch (err) {
+      toast.error(extractErrorMessage(err));
+    }
   };
 
-  const columns: TableColumn<AdminUser>[] = [
-    { key: "username", header: "Username" },
-    { key: "email", header: "Email" },
-    {
-      key: "role",
-      header: "Role",
-      render: (u) =>
-        editingId === u.id ? (
-          <div onClick={(e) => e.stopPropagation()}>
-            <Select
-              autoFocus
-              value={u.role}
-              onChange={(e) => handleRoleChange(u, e.target.value as UserRole)}
-              onBlur={() => setEditingId(null)}
-              className="w-36 px-2.5 py-1 text-xs"
-            >
-              {roleOptions.map((r) => (
-                <option key={r.value} value={r.value}>
-                  {r.label}
-                </option>
-              ))}
-            </Select>
-          </div>
-        ) : (
-          <Badge variant={u.role}>{u.role}</Badge>
-        ),
-    },
-    {
-      key: "date_joined",
-      header: "Joined",
-      render: (u) => new Date(u.date_joined).toLocaleDateString(),
-    },
-    {
-      key: "actions",
-      header: "",
-      render: (u) => (
-        <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
-          <Button variant="outline" className="px-2.5 py-1 text-xs" onClick={() => setEditingId(u.id)}>
-            Edit
-          </Button>
-          <Button
-            variant="danger"
-            className="px-2.5 py-1 text-xs"
-            onClick={() => handleDelete(u)}
-          >
-            Delete
-          </Button>
-        </div>
-      ),
-    },
-  ];
-
   return (
-    <ProtectedRoute>
+    <ProtectedRoute allowedRoles={["admin"]}>
       <DashboardLayout title="User Management">
         <div className="space-y-6">
           <div className="flex flex-wrap items-center justify-between gap-3">
@@ -119,12 +77,7 @@ export default function UsersPage() {
           </div>
 
           {users ? (
-            <Table
-              columns={columns}
-              data={users}
-              getRowKey={(u) => u.id}
-              emptyMessage="No users found."
-            />
+            <UserTable users={users} onRoleChange={handleRoleChange} onDelete={handleDelete} />
           ) : (
             <Skeleton variant="table-row" rows={5} />
           )}

@@ -2,7 +2,9 @@
 
 import { ReactNode } from "react";
 import { useRouter } from "next/navigation";
+import { FileSearch } from "lucide-react";
 import { Table, TableColumn } from "@/components/ui/Table";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { SeverityBadge } from "./SeverityBadge";
 import { StatusBadge } from "./StatusBadge";
 import type { Report } from "@/types/report";
@@ -14,10 +16,26 @@ export interface ReportTableProps {
    * are stopped from bubbling so an action button doesn't also trigger
    * the row's navigate-to-detail click. */
   actions?: (report: Report) => ReactNode;
+  /** Overrides the default EmptyState shown when reports is empty
+   * (e.g. a filtered list wants "try adjusting your filters" instead
+   * of the generic message). */
+  emptyState?: ReactNode;
 }
 
-export function ReportTable({ reports, actions }: ReportTableProps) {
+export function ReportTable({ reports, actions, emptyState }: ReportTableProps) {
   const router = useRouter();
+
+  if (reports.length === 0) {
+    return (
+      emptyState ?? (
+        <EmptyState
+          icon={<FileSearch size={32} />}
+          title="No reports found"
+          description="There's nothing here yet."
+        />
+      )
+    );
+  }
 
   const columns: TableColumn<Report>[] = [
     { key: "title", header: "Title" },
@@ -55,7 +73,6 @@ export function ReportTable({ reports, actions }: ReportTableProps) {
       data={reports}
       getRowKey={(report) => report.id}
       onRowClick={(report) => router.push(`/dashboard/reports/${report.id}`)}
-      emptyMessage="No reports found."
     />
   );
 }

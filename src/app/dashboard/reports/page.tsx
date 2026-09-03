@@ -42,14 +42,17 @@ export default function ReportsPage() {
 
           {reports === null ? (
             <Skeleton variant="table-row" rows={5} columns={4} />
-          ) : reports.length === 0 ? (
-            <EmptyState
-              icon={<FileSearch size={32} />}
-              title="No reports found"
-              description="Try adjusting your search or filters."
-            />
           ) : (
-            <ReportTable reports={reports} />
+            <ReportTable
+              reports={reports}
+              emptyState={
+                <EmptyState
+                  icon={<FileSearch size={32} />}
+                  title="No reports found"
+                  description="Try adjusting your search or filters."
+                />
+              }
+            />
           )}
         </div>
       </DashboardLayout>
