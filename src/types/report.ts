@@ -15,6 +15,14 @@ export interface Comment {
   created_at: string;
 }
 
+export interface ActivityLogEntry {
+  id: number;
+  actor: NestedUser;
+  action: string;
+  detail: string;
+  created_at: string;
+}
+
 export interface Report {
   id: number;
   title: string;
