@@ -5,6 +5,7 @@ import { Modal } from "@/components/ui/Modal";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { Button } from "@/components/ui/Button";
+import { useToast } from "@/components/ui/ToastProvider";
 import { api } from "@/lib/api";
 import { extractErrorMessage } from "@/lib/errors";
 import type { UserRole } from "@/store/authStore";
@@ -25,6 +26,7 @@ const roleOptions: { value: UserRole; label: string }[] = [
 const initial = { username: "", email: "", password: "", role: "user" as UserRole };
 
 export function CreateUserModal({ isOpen, onClose, onCreated }: CreateUserModalProps) {
+  const toast = useToast();
   const [values, setValues] = useState(initial);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -41,6 +43,7 @@ export function CreateUserModal({ isOpen, onClose, onCreated }: CreateUserModalP
     setSubmitting(true);
     try {
       await api.post("/auth/users/", values);
+      toast.success(`User "${values.username}" created`);
       onCreated();
       handleClose();
     } catch (err) {

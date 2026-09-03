@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Select } from "@/components/ui/Select";
+import { useToast } from "@/components/ui/ToastProvider";
 import { api } from "@/lib/api";
 import { extractErrorMessage } from "@/lib/errors";
 import type { NestedUser, Report, ReportStatus } from "@/types/report";
@@ -30,6 +31,7 @@ export function ReportActions({
   compact = false,
 }: ReportActionsProps) {
   const router = useRouter();
+  const toast = useToast();
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [developers, setDevelopers] = useState<NestedUser[]>([]);
@@ -50,6 +52,7 @@ export function ReportActions({
     try {
       const { data } = await api.patch<Report>(`/reports/${report.id}/status/`, payload);
       onUpdated(data);
+      toast.success(`Report status updated to "${statusLabels[data.status]}"`);
     } catch (err) {
       setError(extractErrorMessage(err));
     } finally {
@@ -63,6 +66,7 @@ export function ReportActions({
     setBusy(true);
     try {
       await api.delete(`/reports/${report.id}/`);
+      toast.success("Report deleted");
       router.push("/dashboard/reports");
     } catch (err) {
       setError(extractErrorMessage(err));
