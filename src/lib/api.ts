@@ -34,12 +34,26 @@ async function refreshAccessToken(): Promise<string> {
   return data.access;
 }
 
+// A 401 from these means "wrong credentials" / "invalid refresh token",
+// not "access token expired" - retrying them via refresh is nonsensical
+// (login/register need no token at all) and would mask the real error
+// (e.g. "wrong password") behind "No refresh token available".
+const AUTH_ENDPOINTS_EXEMPT_FROM_REFRESH = ["/auth/login/", "/auth/register/", "/auth/refresh/"];
+
 api.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
     const originalRequest = error.config as RetryableConfig | undefined;
+    const isExemptEndpoint = AUTH_ENDPOINTS_EXEMPT_FROM_REFRESH.some((path) =>
+      originalRequest?.url?.includes(path),
+    );
 
-    if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
+    if (
+      error.response?.status === 401 &&
+      originalRequest &&
+      !originalRequest._retry &&
+      !isExemptEndpoint
+    ) {
       originalRequest._retry = true;
       try {
         refreshPromise ??= refreshAccessToken().finally(() => {
