@@ -14,6 +14,11 @@ export type BadgeVariant =
   | "assigned"
   | "resolved"
   | "closed"
+  // role
+  | "user"
+  | "analyst"
+  | "developer"
+  | "admin"
   // fallback
   | "neutral";
 
@@ -35,6 +40,12 @@ const variantClasses: Record<BadgeVariant, string> = {
   assigned: "bg-amber/15 text-amber border border-amber/30",
   resolved: "bg-accent/15 text-accent border border-accent/30",
   closed: "bg-muted/15 text-muted border border-muted/30",
+
+  // role
+  user: "bg-accent-blue/15 text-accent-blue border border-accent-blue/30",
+  analyst: "bg-accent/15 text-accent border border-accent/30",
+  developer: "bg-amber/15 text-amber border border-amber/30",
+  admin: "bg-danger/15 text-danger border border-danger/30",
 
   neutral: "bg-surface-raised text-muted border border-border",
 };
