@@ -15,15 +15,26 @@ export interface ReportActionsProps {
   currentUserId: number;
   role: UserRole;
   onUpdated: (report: Report) => void;
+  /** Smaller controls for embedding in a table row (e.g. dashboard
+   * queues), instead of the full-size detail-page layout. */
+  compact?: boolean;
 }
 
 const statusOptions = Object.entries(statusLabels) as [ReportStatus, string][];
 
-export function ReportActions({ report, currentUserId, role, onUpdated }: ReportActionsProps) {
+export function ReportActions({
+  report,
+  currentUserId,
+  role,
+  onUpdated,
+  compact = false,
+}: ReportActionsProps) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [developers, setDevelopers] = useState<NestedUser[]>([]);
+  const controlClass = compact ? "px-2.5 py-1 text-xs" : undefined;
+  const selectClass = compact ? "sm:max-w-36 px-2.5 py-1 text-xs" : undefined;
 
   useEffect(() => {
     if (role !== "admin") return;
@@ -63,14 +74,19 @@ export function ReportActions({ report, currentUserId, role, onUpdated }: Report
   const isAssignedToMe = report.assigned_to?.id === currentUserId;
 
   return (
-    <div className="space-y-3">
+    <div className={compact ? "space-y-1.5" : "space-y-3"}>
       {role === "analyst" && (
         <div className="flex flex-wrap gap-2">
-          <Button disabled={busy} onClick={() => patchStatus({ status: "in_review" })}>
+          <Button
+            className={controlClass}
+            disabled={busy}
+            onClick={() => patchStatus({ status: "in_review" })}
+          >
             Set In Review
           </Button>
           <Button
             variant="outline"
+            className={controlClass}
             disabled={busy}
             onClick={() => patchStatus({ status: "verified" })}
           >
@@ -88,7 +104,7 @@ export function ReportActions({ report, currentUserId, role, onUpdated }: Report
               const status = e.target.value as ReportStatus;
               if (status !== "assigned") patchStatus({ status });
             }}
-            className="sm:max-w-44"
+            className={selectClass ?? "sm:max-w-44"}
           >
             {statusOptions.map(([value, label]) => (
               <option key={value} value={value}>
@@ -104,7 +120,7 @@ export function ReportActions({ report, currentUserId, role, onUpdated }: Report
               const id = Number(e.target.value);
               if (id) patchStatus({ status: "assigned", assigned_to: id });
             }}
-            className="sm:max-w-56"
+            className={selectClass ?? "sm:max-w-56"}
           >
             <option value="">Assign to developer...</option>
             {developers.map((dev) => (
@@ -117,7 +133,7 @@ export function ReportActions({ report, currentUserId, role, onUpdated }: Report
       )}
 
       {role === "developer" && isAssignedToMe && (
-        <Button disabled={busy} onClick={() => patchStatus({ status: "resolved" })}>
+        <Button className={controlClass} disabled={busy} onClick={() => patchStatus({ status: "resolved" })}>
           Mark Resolved
         </Button>
       )}
@@ -126,11 +142,12 @@ export function ReportActions({ report, currentUserId, role, onUpdated }: Report
         <div className="flex flex-wrap gap-2">
           <Button
             variant="outline"
+            className={controlClass}
             onClick={() => router.push(`/dashboard/reports/${report.id}/edit`)}
           >
             Edit
           </Button>
-          <Button variant="danger" disabled={busy} onClick={handleDelete}>
+          <Button variant="danger" className={controlClass} disabled={busy} onClick={handleDelete}>
             Delete
           </Button>
         </div>

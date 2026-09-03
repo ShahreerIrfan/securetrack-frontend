@@ -35,3 +35,11 @@ export interface Report {
   created_at: string;
   updated_at: string;
 }
+
+export interface DashboardStats {
+  total_reports: number;
+  by_status: Record<ReportStatus, number>;
+  by_severity: Record<Severity, number>;
+  /** Admins only. */
+  users_by_role?: Record<string, number>;
+}

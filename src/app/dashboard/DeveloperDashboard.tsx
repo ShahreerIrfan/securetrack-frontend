@@ -7,12 +7,7 @@ import { RecentReportsList } from "@/components/dashboard/RecentReportsList";
 import { ReportTable } from "@/components/reports/ReportTable";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { api } from "@/lib/api";
-import type { Report, ReportStatus } from "@/types/report";
-
-interface DashboardStats {
-  total_reports: number;
-  by_status: Record<ReportStatus, number>;
-}
+import type { DashboardStats, Report } from "@/types/report";
 
 export function DeveloperDashboard() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
