@@ -1,6 +1,9 @@
 "use client";
 
 import { use, useEffect, useState } from "react";
+import Link from "next/link";
+import { ArrowLeft, CalendarClock, Clock, FolderTree, UserRound } from "lucide-react";
+import clsx from "clsx";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { SeverityBadge } from "@/components/reports/SeverityBadge";
@@ -9,13 +12,42 @@ import { PriorityBadge } from "@/components/reports/PriorityBadge";
 import { ActivityTimeline } from "@/components/reports/ActivityTimeline";
 import { CommentThread } from "@/components/reports/CommentThread";
 import { ReportActions } from "@/components/reports/ReportActions";
+import { categoryLabels, severityColors } from "@/components/reports/labels";
+import { Avatar } from "@/components/ui/Avatar";
 import { Tabs } from "@/components/ui/Tabs";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { api } from "@/lib/api";
-import { categoryLabels } from "@/components/reports/labels";
 import { formatUserName } from "@/lib/format";
+import { formatRelativeTime } from "@/lib/date";
 import { useAuthStore } from "@/store/authStore";
 import type { ActivityLogEntry, Comment, Report } from "@/types/report";
+
+function isOverdue(report: Report): boolean {
+  if (!report.due_date) return false;
+  if (report.status === "resolved" || report.status === "closed") return false;
+  return new Date(report.due_date) < new Date();
+}
+
+/** One labelled row in the right-hand meta panel. */
+function MetaRow({
+  icon,
+  label,
+  children,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="flex items-start justify-between gap-4 py-2.5">
+      <span className="inline-flex items-center gap-2 text-xs text-muted">
+        {icon}
+        {label}
+      </span>
+      <span className="text-right text-sm text-copy">{children}</span>
+    </div>
+  );
+}
 
 export default function ReportDetailPage(props: PageProps<"/dashboard/reports/[id]">) {
   const { id } = use(props.params);
@@ -47,77 +79,152 @@ export default function ReportDetailPage(props: PageProps<"/dashboard/reports/[i
     <ProtectedRoute>
       <DashboardLayout title={report?.title ?? "Report"}>
         {!report || !user ? (
-          <Skeleton variant="card" className="max-w-3xl" />
+          <Skeleton variant="card" className="max-w-5xl" />
         ) : (
-          <div className="max-w-3xl space-y-6">
-            <div>
-              <div className="flex flex-wrap items-center gap-2">
-                <SeverityBadge severity={report.severity} />
-                <StatusBadge status={report.status} />
-                <PriorityBadge priority={report.priority} />
+          <div className="max-w-5xl space-y-6">
+            <Link
+              href="/dashboard/reports"
+              className="inline-flex items-center gap-1.5 text-xs text-muted transition-colors hover:text-accent"
+            >
+              <ArrowLeft size={14} />
+              Back to reports
+            </Link>
+
+            {/* Hero: the severity colour bleeds in from the left edge and
+                fades out, so the page itself is tinted by how bad this
+                finding is rather than just carrying a coloured chip. */}
+            <section className="relative overflow-hidden rounded-2xl border border-border bg-surface">
+              <span
+                aria-hidden
+                className="absolute inset-y-0 left-0 w-1.5"
+                style={{ backgroundColor: severityColors[report.severity] }}
+              />
+              <div
+                aria-hidden
+                className="pointer-events-none absolute inset-0 opacity-[0.07]"
+                style={{
+                  background: `radial-gradient(60% 120% at 0% 0%, ${severityColors[report.severity]} 0%, transparent 70%)`,
+                }}
+              />
+
+              <div className="relative p-6 pl-7 sm:p-8 sm:pl-9">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="font-mono text-xs text-muted">#{report.id}</span>
+                  <span className="text-muted">·</span>
+                  <SeverityBadge severity={report.severity} />
+                  <StatusBadge status={report.status} />
+                  <PriorityBadge priority={report.priority} />
+                </div>
+
+                <h1 className="mt-3 text-2xl font-bold leading-tight tracking-tight text-foreground sm:text-3xl">
+                  {report.title}
+                </h1>
+
+                <p className="mt-3 max-w-2xl whitespace-pre-line text-sm leading-relaxed text-copy">
+                  {report.description}
+                </p>
+
+                <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-border/60 pt-4 text-xs text-muted">
+                  <span className="inline-flex items-center gap-2">
+                    <Avatar user={report.created_by} size="sm" />
+                    Reported by{" "}
+                    <span className="text-copy">{formatUserName(report.created_by)}</span>
+                  </span>
+                  <span className="inline-flex items-center gap-1.5">
+                    <Clock size={13} />
+                    {formatRelativeTime(report.created_at)}
+                  </span>
+                </div>
               </div>
-              <h1 className="mt-3 text-2xl font-bold text-foreground">{report.title}</h1>
-              <p className="mt-2 text-sm text-copy">{report.description}</p>
-              <p className="mt-3 text-xs text-muted">
-                Reported by {formatUserName(report.created_by)}
-                {report.assigned_to && ` · Assigned to ${formatUserName(report.assigned_to)}`}
-                {" · "}
-                {categoryLabels[report.category]}
-                {report.due_date && (
-                  <>
-                    {" · Due "}
-                    <span
-                      className={
-                        new Date(report.due_date) < new Date() &&
-                        !["resolved", "closed"].includes(report.status)
-                          ? "font-medium text-danger"
-                          : undefined
-                      }
-                    >
-                      {new Date(report.due_date).toLocaleDateString()}
-                    </span>
-                  </>
-                )}
-              </p>
+            </section>
+
+            <div className="grid gap-6 lg:grid-cols-[1fr_18rem] lg:items-start">
+              <div className="space-y-6">
+                <div className="rounded-xl border border-border bg-surface p-5">
+                  <h2 className="mb-3 text-xs font-semibold uppercase tracking-[0.12em] text-muted">
+                    Actions
+                  </h2>
+                  <ReportActions
+                    report={report}
+                    currentUserId={user.id}
+                    role={user.role}
+                    onUpdated={handleReportUpdated}
+                  />
+                </div>
+
+                <div className="rounded-xl border border-border bg-surface p-5">
+                  <Tabs
+                    items={[
+                      {
+                        key: "activity",
+                        label: `Activity${activity.length ? ` (${activity.length})` : ""}`,
+                        content: <ActivityTimeline entries={activity} />,
+                      },
+                      {
+                        key: "comments",
+                        label: `Comments${comments.length ? ` (${comments.length})` : ""}`,
+                        content: (
+                          <CommentThread
+                            reportId={report.id}
+                            comments={comments}
+                            currentUserId={user.id}
+                            isAdmin={user.role === "admin"}
+                            onCommentAdded={(comment) =>
+                              setComments((prev) => [...prev, comment])
+                            }
+                            onCommentUpdated={(updated) =>
+                              setComments((prev) =>
+                                prev.map((c) => (c.id === updated.id ? updated : c)),
+                              )
+                            }
+                            onCommentDeleted={(commentId) =>
+                              setComments((prev) => prev.filter((c) => c.id !== commentId))
+                            }
+                          />
+                        ),
+                      },
+                    ]}
+                  />
+                </div>
+              </div>
+
+              <aside className="rounded-xl border border-border bg-surface p-5">
+                <h2 className="mb-1 text-xs font-semibold uppercase tracking-[0.12em] text-muted">
+                  Details
+                </h2>
+                <div className="divide-y divide-border/60">
+                  <MetaRow icon={<UserRound size={13} />} label="Assignee">
+                    {report.assigned_to ? (
+                      <span className="inline-flex items-center gap-2">
+                        <Avatar user={report.assigned_to} size="sm" />
+                        {formatUserName(report.assigned_to)}
+                      </span>
+                    ) : (
+                      <span className="text-muted">Unassigned</span>
+                    )}
+                  </MetaRow>
+
+                  <MetaRow icon={<FolderTree size={13} />} label="Category">
+                    {categoryLabels[report.category]}
+                  </MetaRow>
+
+                  <MetaRow icon={<CalendarClock size={13} />} label="Due">
+                    {report.due_date ? (
+                      <span className={clsx(isOverdue(report) && "font-semibold text-danger")}>
+                        {new Date(report.due_date).toLocaleDateString()}
+                        {isOverdue(report) && " · overdue"}
+                      </span>
+                    ) : (
+                      <span className="text-muted">Not set</span>
+                    )}
+                  </MetaRow>
+
+                  <MetaRow icon={<Clock size={13} />} label="Last updated">
+                    {formatRelativeTime(report.updated_at)}
+                  </MetaRow>
+                </div>
+              </aside>
             </div>
-
-            <ReportActions
-              report={report}
-              currentUserId={user.id}
-              role={user.role}
-              onUpdated={handleReportUpdated}
-            />
-
-            <Tabs
-              items={[
-                {
-                  key: "activity",
-                  label: "Activity",
-                  content: <ActivityTimeline entries={activity} />,
-                },
-                {
-                  key: "comments",
-                  label: "Comments",
-                  content: (
-                    <CommentThread
-                      reportId={report.id}
-                      comments={comments}
-                      currentUserId={user.id}
-                      isAdmin={user.role === "admin"}
-                      onCommentAdded={(comment) => setComments((prev) => [...prev, comment])}
-                      onCommentUpdated={(updated) =>
-                        setComments((prev) =>
-                          prev.map((c) => (c.id === updated.id ? updated : c)),
-                        )
-                      }
-                      onCommentDeleted={(commentId) =>
-                        setComments((prev) => prev.filter((c) => c.id !== commentId))
-                      }
-                    />
-                  ),
-                },
-              ]}
-            />
           </div>
         )}
       </DashboardLayout>

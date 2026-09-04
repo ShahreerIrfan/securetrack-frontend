@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { AuthForm, AuthFormField } from "@/components/auth/AuthForm";
+import { GuestRoute } from "@/components/auth/GuestRoute";
 import { api } from "@/lib/api";
 import { extractErrorMessage } from "@/lib/errors";
 
@@ -30,12 +31,14 @@ export default function RegisterPage() {
   };
 
   return (
-    <AuthForm
-      title="Register"
-      fields={fields}
-      submitLabel="Register"
-      onSubmit={handleSubmit}
-      footer={{ text: "Already have an account?", linkLabel: "Log In", href: "/login" }}
-    />
+    <GuestRoute>
+      <AuthForm
+        title="Register"
+        fields={fields}
+        submitLabel="Register"
+        onSubmit={handleSubmit}
+        footer={{ text: "Already have an account?", linkLabel: "Log In", href: "/login" }}
+      />
+    </GuestRoute>
   );
 }

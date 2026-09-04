@@ -75,6 +75,15 @@ export function ReportActions({
     }
   };
 
+  // The developer list arrives async, and an assignee could also have
+  // since changed role - either way the <select> would fall back to
+  // showing the placeholder because its value matched no option. Fold
+  // the current assignee in so the control always reflects reality.
+  const assigneeOptions =
+    report.assigned_to && !developers.some((d) => d.id === report.assigned_to?.id)
+      ? [report.assigned_to, ...developers]
+      : developers;
+
   const isCreator = report.created_by.id === currentUserId;
   const isAssignedToMe = report.assigned_to?.id === currentUserId;
   // Mirrors the backend's CanEditReport rule exactly: the creator may
@@ -126,15 +135,20 @@ export function ReportActions({
 
           <Select
             disabled={busy}
-            value=""
+            // Reflect who the report is actually assigned to rather than
+            // resetting to the placeholder after every assignment - the
+            // control should read as current state, not a blank action.
+            value={report.assigned_to?.id ?? ""}
             onChange={(e) => {
               const id = Number(e.target.value);
-              if (id) patchStatus({ status: "assigned", assigned_to: id });
+              if (id && id !== report.assigned_to?.id) {
+                patchStatus({ status: "assigned", assigned_to: id });
+              }
             }}
             className={selectClass ?? "sm:max-w-56"}
           >
             <option value="">Assign to developer...</option>
-            {developers.map((dev) => (
+            {assigneeOptions.map((dev) => (
               <option key={dev.id} value={dev.id}>
                 {formatUserName(dev)}
               </option>

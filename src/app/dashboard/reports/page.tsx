@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { FileSearch, LayoutGrid, Plus, Table2 } from "lucide-react";
+import clsx from "clsx";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { ReportFilters, ReportFiltersState } from "@/components/reports/ReportFilters";
@@ -74,13 +75,18 @@ export default function ReportsPage() {
           <div className="flex flex-wrap items-center justify-between gap-3">
             <ReportFilters value={filters} onChange={setFilters} />
             <div className="flex items-center gap-2">
-              <div className="flex rounded-lg border border-border p-0.5">
+              <div className="flex rounded-lg border border-border bg-surface p-0.5">
                 <button
                   type="button"
                   aria-label="Table view"
                   aria-pressed={view === "table"}
                   onClick={() => setView("table")}
-                  className={`rounded-md p-1.5 ${view === "table" ? "bg-surface-raised text-accent" : "text-muted"}`}
+                  className={clsx(
+                    "rounded-md p-1.5 transition-colors",
+                    view === "table"
+                      ? "bg-surface-raised text-accent"
+                      : "text-muted hover:text-foreground",
+                  )}
                 >
                   <Table2 size={16} />
                 </button>
@@ -89,7 +95,12 @@ export default function ReportsPage() {
                   aria-label="Grid view"
                   aria-pressed={view === "grid"}
                   onClick={() => setView("grid")}
-                  className={`rounded-md p-1.5 ${view === "grid" ? "bg-surface-raised text-accent" : "text-muted"}`}
+                  className={clsx(
+                    "rounded-md p-1.5 transition-colors",
+                    view === "grid"
+                      ? "bg-surface-raised text-accent"
+                      : "text-muted hover:text-foreground",
+                  )}
                 >
                   <LayoutGrid size={16} />
                 </button>
@@ -100,6 +111,12 @@ export default function ReportsPage() {
               </Link>
             </div>
           </div>
+
+          {reports !== null && reports.length > 0 && (
+            <p className="-mb-2 text-xs text-muted">
+              {reports.length} report{reports.length === 1 ? "" : "s"}
+            </p>
+          )}
 
           {reports === null ? (
             <Skeleton variant="table-row" rows={5} columns={4} />
