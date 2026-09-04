@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Select } from "@/components/ui/Select";
 import { formatUserName } from "@/lib/format";
+import { formatRelativeTime } from "@/lib/date";
 import type { UserRole } from "@/store/authStore";
 import type { AdminUser } from "@/types/user";
 
@@ -18,16 +19,38 @@ const roleOptions: { value: UserRole; label: string }[] = [
 
 export interface UserTableProps {
   users: AdminUser[];
+  /** The signed-in admin. Their own row is locked down, mirroring the
+   * API's refusal to let an admin demote, deactivate or delete
+   * themselves - so the UI never offers an action the server rejects. */
+  currentUserId?: number;
   onRoleChange: (user: AdminUser, role: UserRole) => void;
+  onToggleActive: (user: AdminUser) => void;
   onDelete: (user: AdminUser) => void;
 }
 
-export function UserTable({ users, onRoleChange, onDelete }: UserTableProps) {
+export function UserTable({
+  users,
+  currentUserId,
+  onRoleChange,
+  onToggleActive,
+  onDelete,
+}: UserTableProps) {
   const [editingId, setEditingId] = useState<number | null>(null);
 
   const columns: TableColumn<AdminUser>[] = [
-    { key: "name", header: "Name", render: (u) => formatUserName(u) },
-    { key: "email", header: "Email" },
+    {
+      key: "name",
+      header: "Name",
+      render: (u) => (
+        <div className="min-w-0">
+          <p className="truncate font-medium text-foreground">
+            {formatUserName(u)}
+            {u.id === currentUserId && <span className="ml-2 text-xs text-muted">(you)</span>}
+          </p>
+          <p className="truncate text-xs text-muted">{u.email}</p>
+        </div>
+      ),
+    },
     {
       key: "role",
       header: "Role",
@@ -56,6 +79,33 @@ export function UserTable({ users, onRoleChange, onDelete }: UserTableProps) {
         ),
     },
     {
+      key: "is_active",
+      header: "Status",
+      render: (u) => (
+        <Badge variant={u.is_active ? "verified" : "closed"}>
+          {u.is_active ? "Active" : "Deactivated"}
+        </Badge>
+      ),
+    },
+    {
+      key: "reports",
+      header: "Reports",
+      render: (u) => (
+        <span className="whitespace-nowrap text-xs text-muted">
+          {u.reports_created_count} created · {u.reports_assigned_count} assigned
+        </span>
+      ),
+    },
+    {
+      key: "last_login",
+      header: "Last Login",
+      render: (u) => (
+        <span className="whitespace-nowrap text-xs text-muted">
+          {u.last_login ? formatRelativeTime(u.last_login) : "Never"}
+        </span>
+      ),
+    },
+    {
       key: "date_joined",
       header: "Joined",
       render: (u) => new Date(u.date_joined).toLocaleDateString(),
@@ -63,20 +113,40 @@ export function UserTable({ users, onRoleChange, onDelete }: UserTableProps) {
     {
       key: "actions",
       header: "",
-      render: (u) => (
-        <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
-          <Button
-            variant="outline"
-            className="px-2.5 py-1 text-xs"
-            onClick={() => setEditingId(u.id)}
-          >
-            Edit
-          </Button>
-          <Button variant="danger" className="px-2.5 py-1 text-xs" onClick={() => onDelete(u)}>
-            Delete
-          </Button>
-        </div>
-      ),
+      render: (u) => {
+        const isSelf = u.id === currentUserId;
+        return (
+          <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
+            <Button
+              variant="outline"
+              className="px-2.5 py-1 text-xs"
+              disabled={isSelf}
+              title={isSelf ? "You cannot change your own role" : undefined}
+              onClick={() => setEditingId(u.id)}
+            >
+              Edit
+            </Button>
+            <Button
+              variant="outline"
+              className="px-2.5 py-1 text-xs"
+              disabled={isSelf}
+              title={isSelf ? "You cannot deactivate your own account" : undefined}
+              onClick={() => onToggleActive(u)}
+            >
+              {u.is_active ? "Deactivate" : "Activate"}
+            </Button>
+            <Button
+              variant="danger"
+              className="px-2.5 py-1 text-xs"
+              disabled={isSelf}
+              title={isSelf ? "You cannot delete your own account" : undefined}
+              onClick={() => onDelete(u)}
+            >
+              Delete
+            </Button>
+          </div>
+        );
+      },
     },
   ];
 

@@ -42,6 +42,44 @@ export interface DashboardStats {
   total_reports: number;
   by_status: Record<ReportStatus, number>;
   by_severity: Record<Severity, number>;
-  /** Admins only. */
+  /** Every field below is admin-only - the API omits them for other roles. */
   users_by_role?: Record<string, number>;
+  active_users?: number;
+  inactive_users?: number;
+  open_reports?: number;
+  unassigned_reports?: number;
+  critical_open?: number;
+  created_this_week?: number;
+  resolved_this_week?: number;
+  /** null until at least one report has been resolved or closed. */
+  avg_resolution_hours?: number | null;
+}
+
+/** One day of intake vs. throughput from /api/dashboard/trends/. */
+export interface TrendPoint {
+  date: string;
+  created: number;
+  resolved: number;
+}
+
+/** One developer's queue depth from /api/dashboard/workload/. */
+export interface WorkloadRow {
+  id: number;
+  email: string;
+  first_name: string;
+  last_name: string;
+  open_assigned: number;
+  resolved: number;
+  total_assigned: number;
+}
+
+/** System-wide audit entry from /api/dashboard/activity/. */
+export interface GlobalActivityEntry {
+  id: number;
+  report_id: number;
+  report_title: string;
+  actor: NestedUser;
+  action: string;
+  detail: string;
+  created_at: string;
 }

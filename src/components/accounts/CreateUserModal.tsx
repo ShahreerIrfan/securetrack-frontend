@@ -106,9 +106,11 @@ export function CreateUserModal({ isOpen, onClose, onCreated }: CreateUserModalP
             id="new-password"
             type="password"
             required
+            minLength={8}
             value={values.password}
             onChange={(e) => setValues((v) => ({ ...v, password: e.target.value }))}
           />
+          <p className="mt-1 text-xs text-muted">At least 8 characters.</p>
         </div>
         <div>
           <label htmlFor="new-role" className="mb-1.5 block text-sm text-copy">
