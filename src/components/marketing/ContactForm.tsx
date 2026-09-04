@@ -1,12 +1,18 @@
 "use client";
 
 import { ChangeEvent, FormEvent, useState } from "react";
-import { Input } from "@/components/ui/Input";
-import { Textarea } from "@/components/ui/Textarea";
-import { Button } from "@/components/ui/Button";
+import { ArrowRight } from "lucide-react";
 import { useToast } from "@/components/ui/ToastProvider";
 
 const initialValues = { name: "", email: "", subject: "", message: "" };
+
+// The shared Input/Textarea primitives are styled for the dark dashboard;
+// this form lives on the light marketing site, so it carries its own field
+// styling rather than fighting those defaults with overrides.
+const fieldClass =
+  "w-full rounded-xl border border-ink/12 bg-mist px-4 py-3 text-sm text-ink placeholder:text-slate/70 transition-colors focus:border-brand focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand/20";
+
+const labelClass = "mb-1.5 block text-sm font-medium text-ink";
 
 export function ContactForm() {
   const toast = useToast();
@@ -36,48 +42,69 @@ export function ContactForm() {
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
-          <label htmlFor="name" className="mb-1.5 block text-sm text-copy">
+          <label htmlFor="name" className={labelClass}>
             Name
           </label>
-          <Input id="name" required value={values.name} onChange={handleChange("name")} />
+          <input
+            id="name"
+            required
+            value={values.name}
+            onChange={handleChange("name")}
+            className={fieldClass}
+          />
         </div>
         <div>
-          <label htmlFor="email" className="mb-1.5 block text-sm text-copy">
+          <label htmlFor="email" className={labelClass}>
             Email
           </label>
-          <Input
+          <input
             id="email"
             type="email"
             required
             value={values.email}
             onChange={handleChange("email")}
+            className={fieldClass}
           />
         </div>
       </div>
 
       <div>
-        <label htmlFor="subject" className="mb-1.5 block text-sm text-copy">
+        <label htmlFor="subject" className={labelClass}>
           Subject
         </label>
-        <Input id="subject" required value={values.subject} onChange={handleChange("subject")} />
+        <input
+          id="subject"
+          required
+          value={values.subject}
+          onChange={handleChange("subject")}
+          className={fieldClass}
+        />
       </div>
 
       <div>
-        <label htmlFor="message" className="mb-1.5 block text-sm text-copy">
+        <label htmlFor="message" className={labelClass}>
           Message
         </label>
-        <Textarea
+        <textarea
           id="message"
           rows={5}
           required
           value={values.message}
           onChange={handleChange("message")}
+          className={fieldClass}
         />
       </div>
 
-      <Button type="submit" disabled={submitting} className="w-full sm:w-auto">
+      <button
+        type="submit"
+        disabled={submitting}
+        className="group inline-flex items-center gap-2.5 rounded-full bg-brand-gradient py-2 pl-6 pr-2 text-sm font-semibold text-white transition-all hover:brightness-110 disabled:opacity-60"
+      >
         {submitting ? "Sending..." : "Send Message"}
-      </Button>
+        <span className="flex size-8 items-center justify-center rounded-full bg-white/25 transition-transform group-hover:translate-x-0.5">
+          <ArrowRight size={15} />
+        </span>
+      </button>
     </form>
   );
 }

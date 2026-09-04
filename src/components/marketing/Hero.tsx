@@ -2,10 +2,9 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
 import { ShieldCheck } from "lucide-react";
 import clsx from "clsx";
-import { buttonClassName } from "@/components/ui/Button";
+import { ArrowButton } from "./ArrowButton";
 import { useCanAutoplayVideo } from "@/hooks/useCanAutoplayVideo";
 
 export function Hero() {
@@ -13,7 +12,7 @@ export function Hero() {
   const [videoReady, setVideoReady] = useState(false);
 
   return (
-    <section className="relative flex min-h-140 items-center overflow-hidden bg-background sm:min-h-160 lg:min-h-190">
+    <section className="relative flex min-h-140 items-center overflow-hidden bg-ink sm:min-h-160 lg:min-h-168">
       {/* Poster paints immediately and never leaves the DOM - it's the
           entire background on a slow/data-saver connection, and stays
           underneath the video everywhere else until playback actually
@@ -37,50 +36,40 @@ export function Hero() {
           preload="auto"
           onCanPlay={() => setVideoReady(true)}
           className={clsx(
-            "absolute inset-0 h-full w-full object-cover transition-opacity duration-700",
+            "absolute inset-0 size-full object-cover transition-opacity duration-700",
             videoReady ? "opacity-100" : "opacity-0",
           )}
         />
       )}
 
-      {/* Legibility scrim: darker at the edges/bottom where the CTA and
-          badges sit, lighter through the middle so the footage still
-          reads as video rather than a flat tinted panel. */}
-      <div className="pointer-events-none absolute inset-0 bg-linear-to-b from-background/80 via-background/55 to-background/90" />
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_35%,transparent,rgba(10,14,20,0.6)_75%)]" />
+      {/* Navy wash, heaviest on the left where the copy sits. */}
+      <div className="pointer-events-none absolute inset-0 bg-linear-to-r from-ink/95 via-ink/75 to-ink/40" />
 
-      <div className="relative mx-auto w-full max-w-4xl px-6 py-24 text-center sm:py-28 lg:px-10">
-        <div className="inline-flex items-center gap-2 rounded-full border border-accent/60 bg-background/40 px-4 py-1.5 backdrop-blur-sm">
-          <ShieldCheck size={14} className="text-accent" />
-          <span className="text-[13px] font-medium uppercase tracking-[0.14em] text-accent">
-            Security Incident Management
+      <div className="relative mx-auto w-full max-w-7xl px-6 py-24 lg:px-10">
+        <div className="max-w-2xl">
+          <span className="inline-flex items-center gap-2 text-[13px] font-semibold uppercase tracking-[0.18em] text-white">
+            <ShieldCheck size={16} className="text-brand-2" />
+            Welcome to SecureTrack
           </span>
-        </div>
 
-        <h1 className="mt-6 text-4xl font-bold leading-[1.05] tracking-tight text-white sm:text-6xl lg:text-7xl">
-          Track. Verify. Fix.
-          <br />
-          <span className="text-accent">Faster.</span>
-        </h1>
+          <h1 className="mt-5 font-display text-4xl font-extrabold leading-[1.08] tracking-tight text-white sm:text-6xl lg:text-[64px]">
+            Every finding
+            <br />
+            tracked to closure
+          </h1>
 
-        <p className="mx-auto mt-6 max-w-xl text-base leading-relaxed text-copy sm:text-lg">
-          Report, verify, assign, and resolve security vulnerabilities with a clear
-          role-based workflow built for security teams.
-        </p>
+          <p className="mt-6 max-w-lg text-base leading-relaxed text-white/75">
+            SecureTrack gives security teams one place to report, verify, assign and
+            resolve vulnerabilities — with a role-based workflow and a full audit trail
+            behind every change.
+          </p>
 
-        <div className="mt-9 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
-          <Link
-            href="/register"
-            className={buttonClassName("primary", "w-full px-8 py-3.5 text-base sm:w-auto")}
-          >
-            Get Started Free
-          </Link>
-          <Link
-            href="/#how-it-works"
-            className={buttonClassName("outline", "w-full px-8 py-3.5 text-base sm:w-auto")}
-          >
-            See How It Works
-          </Link>
+          <div className="mt-9 flex flex-wrap items-center gap-4">
+            <ArrowButton href="/register">Get Started</ArrowButton>
+            <ArrowButton href="/features" variant="outline">
+              Explore Features
+            </ArrowButton>
+          </div>
         </div>
       </div>
     </section>

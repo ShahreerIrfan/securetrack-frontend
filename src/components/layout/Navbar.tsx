@@ -1,54 +1,95 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
-import { ShieldCheck } from "lucide-react";
+import { Menu, ShieldCheck, X } from "lucide-react";
+import { ArrowButton } from "@/components/marketing/ArrowButton";
+import { MarketingTopBar } from "./MarketingTopBar";
 
 const navLinks = [
   { label: "Home", href: "/" },
   { label: "Features", href: "/features" },
   { label: "How it Works", href: "/#how-it-works" },
-  { label: "Dashboard", href: "/dashboard" },
-  { label: "Contact", href: "/contact" },
+  { label: "Pricing", href: "/#pricing" },
+  { label: "Contact Us", href: "/contact" },
 ];
 
 export function Navbar() {
+  const [open, setOpen] = useState(false);
+
   return (
-    <header className="sticky top-0 z-50 border-b border-border bg-background">
+    <header className="sticky top-0 z-50 bg-white shadow-sm">
+      <MarketingTopBar />
+
       <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6 lg:px-10">
         <Link href="/" className="flex shrink-0 items-center gap-2.5">
-          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-accent/15">
-            <ShieldCheck size={18} className="text-accent" />
+          <span className="flex size-9 items-center justify-center rounded-full bg-brand-gradient">
+            <ShieldCheck size={19} className="text-white" />
           </span>
-          <span className="whitespace-nowrap text-lg font-bold text-white sm:text-xl">
-            Secure<span className="text-accent">Track</span>
+          <span className="font-display text-xl font-extrabold tracking-tight text-ink">
+            SecureTrack<span className="text-brand-2">.</span>
           </span>
         </Link>
 
-        <nav className="hidden items-center gap-8 md:flex">
+        <nav className="hidden items-center gap-8 lg:flex">
           {navLinks.map((link) => (
             <Link
               key={link.href}
               href={link.href}
-              className="text-sm text-copy transition-colors hover:text-white"
+              className="text-[15px] font-medium text-ink transition-colors hover:text-brand"
             >
               {link.label}
             </Link>
           ))}
         </nav>
 
-        <div className="flex shrink-0 items-center gap-3 sm:gap-6">
+        <div className="flex items-center gap-3">
           <Link
             href="/login"
-            className="whitespace-nowrap text-sm text-white transition-colors hover:text-accent"
+            className="hidden text-[15px] font-medium text-ink transition-colors hover:text-brand sm:block"
           >
             Log In
           </Link>
-          <Link
-            href="/register"
-            className="whitespace-nowrap rounded-full bg-accent px-4 py-2 text-sm font-semibold text-background transition-opacity hover:opacity-90 sm:px-6"
+          <ArrowButton href="/register" className="hidden sm:inline-flex">
+            Get Started
+          </ArrowButton>
+
+          <button
+            type="button"
+            aria-label={open ? "Close menu" : "Open menu"}
+            aria-expanded={open}
+            onClick={() => setOpen((v) => !v)}
+            className="flex size-10 items-center justify-center rounded-lg text-ink lg:hidden"
           >
-            Sign Up
-          </Link>
+            {open ? <X size={22} /> : <Menu size={22} />}
+          </button>
         </div>
       </div>
+
+      {open && (
+        <nav className="border-t border-black/5 bg-white px-6 pb-5 lg:hidden">
+          {navLinks.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              onClick={() => setOpen(false)}
+              className="block border-b border-black/5 py-3 text-[15px] font-medium text-ink"
+            >
+              {link.label}
+            </Link>
+          ))}
+          <div className="mt-4 flex items-center gap-3">
+            <Link
+              href="/login"
+              onClick={() => setOpen(false)}
+              className="text-[15px] font-medium text-ink"
+            >
+              Log In
+            </Link>
+            <ArrowButton href="/register">Get Started</ArrowButton>
+          </div>
+        </nav>
+      )}
     </header>
   );
 }

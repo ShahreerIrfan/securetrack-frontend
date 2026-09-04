@@ -16,6 +16,20 @@
   --color-danger: #ff4757;
   --color-amber: #ffb020;
   --font-sans: var(--font-inter);
+
+  /* Marketing-site palette, sampled from the reference design. Kept as a
+     separate token set rather than overriding the dashboard's dark theme
+     above: the two surfaces are deliberately different products - a light
+     public site and a dark operator console - and they share a codebase,
+     not a palette. */
+  --color-ink: #010535; /* deep navy: headings + dark sections */
+  --color-ink-2: #0b1450; /* one step lighter, for layered dark panels */
+  --color-brand: #4d51ab; /* indigo, gradient start */
+  --color-brand-2: #55cce2; /* cyan, gradient end */
+  --color-mist: #f2f2f5; /* light grey alternating section */
+  --color-slate: #5c6470; /* body copy on light backgrounds */
+
+  --font-display: var(--font-jakarta);
 }
 
 @theme inline {
@@ -30,7 +44,26 @@
   --color-accent-blue: var(--color-accent-blue);
   --color-danger: var(--color-danger);
   --color-amber: var(--color-amber);
+  --color-ink: var(--color-ink);
+  --color-ink-2: var(--color-ink-2);
+  --color-brand: var(--color-brand);
+  --color-brand-2: var(--color-brand-2);
+  --color-mist: var(--color-mist);
+  --color-slate: var(--color-slate);
   --font-sans: var(--font-sans);
+  --font-display: var(--font-display);
+}
+
+@utility bg-brand-gradient {
+  background-image: linear-gradient(90deg, var(--color-brand) 0%, var(--color-brand-2) 100%);
+}
+
+/* The reference sets its section headings in two tones: the first line in
+   solid navy, the second washed through the brand gradient. */
+@utility text-brand-gradient {
+  background-image: linear-gradient(90deg, var(--color-brand) 0%, var(--color-brand-2) 100%);
+  background-clip: text;
+  color: transparent;
 }
 
 body {

@@ -1,14 +1,18 @@
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { Hero } from "@/components/marketing/Hero";
-import { TrustedByStrip } from "@/components/marketing/TrustedByStrip";
-import { FeatureGrid } from "@/components/marketing/FeatureGrid";
-import { DashboardPreview } from "@/components/marketing/DashboardPreview";
-import { HowItWorksSection } from "@/components/marketing/HowItWorksSection";
-import { SeverityLegend } from "@/components/marketing/SeverityLegend";
-import { StatsSection } from "@/components/marketing/StatsSection";
-import { InfrastructureSection } from "@/components/marketing/InfrastructureSection";
+import { AboutSection } from "@/components/marketing/AboutSection";
+import { ServicesSection } from "@/components/marketing/ServicesSection";
+import { FeatureSection } from "@/components/marketing/FeatureSection";
+import { LifecycleSection } from "@/components/marketing/LifecycleSection";
+import { WhyChooseSection } from "@/components/marketing/WhyChooseSection";
+import { SecuritySection } from "@/components/marketing/SecuritySection";
+import { PricingSection } from "@/components/marketing/PricingSection";
+import { WalkthroughSection } from "@/components/marketing/WalkthroughSection";
+import { RolesSection } from "@/components/marketing/RolesSection";
 import { CTABanner } from "@/components/marketing/CTABanner";
+import { FaqSection } from "@/components/marketing/FaqSection";
+import { BlogSection } from "@/components/marketing/BlogSection";
 
 export default function Home() {
   return (
@@ -16,14 +20,18 @@ export default function Home() {
       <Navbar />
       <main>
         <Hero />
-        <TrustedByStrip />
-        <FeatureGrid />
-        <DashboardPreview />
-        <HowItWorksSection />
-        <SeverityLegend />
-        <StatsSection />
-        <InfrastructureSection />
+        <AboutSection />
+        <ServicesSection />
+        <FeatureSection />
+        <LifecycleSection />
+        <WhyChooseSection />
+        <SecuritySection />
+        <PricingSection />
+        <WalkthroughSection />
+        <RolesSection />
         <CTABanner />
+        <FaqSection />
+        <BlogSection />
       </main>
       <Footer />
     </>
