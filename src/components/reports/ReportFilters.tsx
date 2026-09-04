@@ -2,13 +2,14 @@
 
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
-import type { ReportStatus, Severity } from "@/types/report";
-import { severityLabels, statusLabels } from "./labels";
+import type { Priority, ReportStatus, Severity } from "@/types/report";
+import { priorityLabels, severityLabels, statusLabels } from "./labels";
 
 export interface ReportFiltersState {
   search: string;
   severity: Severity | "";
   status: ReportStatus | "";
+  priority: Priority | "";
 }
 
 export interface ReportFiltersProps {
@@ -18,6 +19,7 @@ export interface ReportFiltersProps {
 
 const severityOptions = Object.entries(severityLabels) as [Severity, string][];
 const statusOptions = Object.entries(statusLabels) as [ReportStatus, string][];
+const priorityOptions = Object.entries(priorityLabels) as [Priority, string][];
 
 export function ReportFilters({ value, onChange }: ReportFiltersProps) {
   return (
@@ -35,6 +37,18 @@ export function ReportFilters({ value, onChange }: ReportFiltersProps) {
       >
         <option value="">All severities</option>
         {severityOptions.map(([val, label]) => (
+          <option key={val} value={val}>
+            {label}
+          </option>
+        ))}
+      </Select>
+      <Select
+        value={value.priority}
+        onChange={(e) => onChange({ ...value, priority: e.target.value as Priority | "" })}
+        className="sm:max-w-40"
+      >
+        <option value="">All priorities</option>
+        {priorityOptions.map(([val, label]) => (
           <option key={val} value={val}>
             {label}
           </option>

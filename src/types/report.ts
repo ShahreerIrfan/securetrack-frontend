@@ -1,5 +1,12 @@
 export type Severity = "low" | "medium" | "high" | "critical";
 export type ReportStatus = "new" | "in_review" | "verified" | "assigned" | "resolved" | "closed";
+export type Priority = "low" | "medium" | "high" | "urgent";
+export type Category =
+  | "web_application"
+  | "network"
+  | "physical_security"
+  | "social_engineering"
+  | "other";
 
 export interface NestedUser {
   id: number;
@@ -15,6 +22,7 @@ export interface Comment {
   author: NestedUser;
   content: string;
   created_at: string;
+  updated_at: string;
 }
 
 export interface ActivityLogEntry {
@@ -31,6 +39,9 @@ export interface Report {
   description: string;
   severity: Severity;
   status: ReportStatus;
+  priority: Priority;
+  category: Category;
+  due_date: string | null;
   created_by: NestedUser;
   assigned_to: NestedUser | null;
   comments?: Comment[];

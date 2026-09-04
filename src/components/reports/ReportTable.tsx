@@ -7,6 +7,7 @@ import { Table, TableColumn } from "@/components/ui/Table";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { SeverityBadge } from "./SeverityBadge";
 import { StatusBadge } from "./StatusBadge";
+import { PriorityBadge } from "./PriorityBadge";
 import type { Report } from "@/types/report";
 
 export interface ReportTableProps {
@@ -20,9 +21,18 @@ export interface ReportTableProps {
    * (e.g. a filtered list wants "try adjusting your filters" instead
    * of the generic message). */
   emptyState?: ReactNode;
+  /** Drops the priority/due-date columns for tight embeddings (dashboard
+   * queues) where the full column set would overflow. */
+  compact?: boolean;
 }
 
-export function ReportTable({ reports, actions, emptyState }: ReportTableProps) {
+function isOverdue(report: Report): boolean {
+  if (!report.due_date) return false;
+  if (report.status === "resolved" || report.status === "closed") return false;
+  return new Date(report.due_date) < new Date();
+}
+
+export function ReportTable({ reports, actions, emptyState, compact = false }: ReportTableProps) {
   const router = useRouter();
 
   if (reports.length === 0) {
@@ -49,12 +59,35 @@ export function ReportTable({ reports, actions, emptyState }: ReportTableProps) 
       header: "Status",
       render: (report) => <StatusBadge status={report.status} />,
     },
-    {
-      key: "created_at",
-      header: "Created",
-      render: (report) => new Date(report.created_at).toLocaleDateString(),
-    },
   ];
+
+  if (!compact) {
+    columns.push(
+      {
+        key: "priority",
+        header: "Priority",
+        render: (report) => <PriorityBadge priority={report.priority} />,
+      },
+      {
+        key: "due_date",
+        header: "Due",
+        render: (report) =>
+          report.due_date ? (
+            <span className={isOverdue(report) ? "font-medium text-danger" : undefined}>
+              {new Date(report.due_date).toLocaleDateString()}
+            </span>
+          ) : (
+            <span className="text-muted">—</span>
+          ),
+      },
+    );
+  }
+
+  columns.push({
+    key: "created_at",
+    header: "Created",
+    render: (report) => new Date(report.created_at).toLocaleDateString(),
+  });
 
   if (actions) {
     columns.push({

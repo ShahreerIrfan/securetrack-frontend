@@ -65,7 +65,11 @@ export function DeveloperDashboard() {
 
       <div>
         <h2 className="mb-3 text-sm font-medium text-copy">All Assigned Reports</h2>
-        {assigned ? <ReportTable reports={assigned} /> : <Skeleton variant="table-row" rows={4} />}
+        {assigned ? (
+          <ReportTable reports={assigned} compact />
+        ) : (
+          <Skeleton variant="table-row" rows={4} />
+        )}
       </div>
     </div>
   );

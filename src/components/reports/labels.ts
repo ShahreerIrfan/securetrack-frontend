@@ -1,4 +1,4 @@
-import type { ReportStatus, Severity } from "@/types/report";
+import type { Category, Priority, ReportStatus, Severity } from "@/types/report";
 
 export const severityLabels: Record<Severity, string> = {
   low: "Low",
@@ -14,6 +14,21 @@ export const statusLabels: Record<ReportStatus, string> = {
   assigned: "Assigned",
   resolved: "Resolved",
   closed: "Closed",
+};
+
+export const priorityLabels: Record<Priority, string> = {
+  low: "Low",
+  medium: "Medium",
+  high: "High",
+  urgent: "Urgent",
+};
+
+export const categoryLabels: Record<Category, string> = {
+  web_application: "Web Application",
+  network: "Network",
+  physical_security: "Physical Security",
+  social_engineering: "Social Engineering",
+  other: "Other",
 };
 
 // Same hex values Badge.tsx uses for these variants - kept in sync so a
@@ -32,4 +47,11 @@ export const statusColors: Record<ReportStatus, string> = {
   assigned: "#FFB020",
   resolved: "#00FF9C",
   closed: "#8B98A5",
+};
+
+export const priorityColors: Record<Priority, string> = {
+  low: "#00FF9C",
+  medium: "#00C2FF",
+  high: "#FFB020",
+  urgent: "#FF4757",
 };

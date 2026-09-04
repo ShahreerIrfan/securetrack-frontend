@@ -77,6 +77,12 @@ export function ReportActions({
 
   const isCreator = report.created_by.id === currentUserId;
   const isAssignedToMe = report.assigned_to?.id === currentUserId;
+  // Mirrors the backend's CanEditReport rule exactly: the creator may
+  // edit/delete while status is still "new"; admins may always edit
+  // (though delete stays governed by the separate, stricter
+  // IsOwnerOrAdmin + status=new rule enforced server-side on destroy).
+  const canEdit = role === "admin" || (isCreator && report.status === "new");
+  const canDelete = role === "admin" || (isCreator && report.status === "new");
 
   return (
     <div className={compact ? "space-y-1.5" : "space-y-3"}>
@@ -143,18 +149,27 @@ export function ReportActions({
         </Button>
       )}
 
-      {role === "user" && isCreator && report.status === "new" && (
+      {(canEdit || canDelete) && (
         <div className="flex flex-wrap gap-2">
-          <Button
-            variant="outline"
-            className={controlClass}
-            onClick={() => router.push(`/dashboard/reports/${report.id}/edit`)}
-          >
-            Edit
-          </Button>
-          <Button variant="danger" className={controlClass} disabled={busy} onClick={handleDelete}>
-            Delete
-          </Button>
+          {canEdit && (
+            <Button
+              variant="outline"
+              className={controlClass}
+              onClick={() => router.push(`/dashboard/reports/${report.id}/edit`)}
+            >
+              Edit
+            </Button>
+          )}
+          {canDelete && (
+            <Button
+              variant="danger"
+              className={controlClass}
+              disabled={busy}
+              onClick={handleDelete}
+            >
+              Delete
+            </Button>
+          )}
         </div>
       )}
 

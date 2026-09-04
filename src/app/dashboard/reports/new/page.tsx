@@ -14,7 +14,10 @@ export default function NewReportPage() {
 
   const handleSubmit = async (values: ReportFormValues) => {
     try {
-      const { data } = await api.post("/reports/", values);
+      const { data } = await api.post("/reports/", {
+        ...values,
+        due_date: values.due_date || null,
+      });
       toast.success("Report created");
       router.push(`/dashboard/reports/${data.id}`);
     } catch (err) {

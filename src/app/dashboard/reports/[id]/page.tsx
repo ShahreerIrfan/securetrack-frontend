@@ -5,12 +5,14 @@ import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { SeverityBadge } from "@/components/reports/SeverityBadge";
 import { StatusBadge } from "@/components/reports/StatusBadge";
+import { PriorityBadge } from "@/components/reports/PriorityBadge";
 import { ActivityTimeline } from "@/components/reports/ActivityTimeline";
 import { CommentThread } from "@/components/reports/CommentThread";
 import { ReportActions } from "@/components/reports/ReportActions";
 import { Tabs } from "@/components/ui/Tabs";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { api } from "@/lib/api";
+import { categoryLabels } from "@/components/reports/labels";
 import { formatUserName } from "@/lib/format";
 import { useAuthStore } from "@/store/authStore";
 import type { ActivityLogEntry, Comment, Report } from "@/types/report";
@@ -52,12 +54,30 @@ export default function ReportDetailPage(props: PageProps<"/dashboard/reports/[i
               <div className="flex flex-wrap items-center gap-2">
                 <SeverityBadge severity={report.severity} />
                 <StatusBadge status={report.status} />
+                <PriorityBadge priority={report.priority} />
               </div>
               <h1 className="mt-3 text-2xl font-bold text-foreground">{report.title}</h1>
               <p className="mt-2 text-sm text-copy">{report.description}</p>
               <p className="mt-3 text-xs text-muted">
                 Reported by {formatUserName(report.created_by)}
                 {report.assigned_to && ` · Assigned to ${formatUserName(report.assigned_to)}`}
+                {" · "}
+                {categoryLabels[report.category]}
+                {report.due_date && (
+                  <>
+                    {" · Due "}
+                    <span
+                      className={
+                        new Date(report.due_date) < new Date() &&
+                        !["resolved", "closed"].includes(report.status)
+                          ? "font-medium text-danger"
+                          : undefined
+                      }
+                    >
+                      {new Date(report.due_date).toLocaleDateString()}
+                    </span>
+                  </>
+                )}
               </p>
             </div>
 
@@ -82,7 +102,17 @@ export default function ReportDetailPage(props: PageProps<"/dashboard/reports/[i
                     <CommentThread
                       reportId={report.id}
                       comments={comments}
+                      currentUserId={user.id}
+                      isAdmin={user.role === "admin"}
                       onCommentAdded={(comment) => setComments((prev) => [...prev, comment])}
+                      onCommentUpdated={(updated) =>
+                        setComments((prev) =>
+                          prev.map((c) => (c.id === updated.id ? updated : c)),
+                        )
+                      }
+                      onCommentDeleted={(commentId) =>
+                        setComments((prev) => prev.filter((c) => c.id !== commentId))
+                      }
                     />
                   ),
                 },

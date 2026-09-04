@@ -247,6 +247,7 @@ export function AdminDashboard() {
         {unassignedVerified && user ? (
           <ReportTable
             reports={unassignedVerified}
+            compact
             actions={(report) => (
               <ReportActions
                 report={report}

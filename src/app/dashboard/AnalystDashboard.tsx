@@ -58,6 +58,7 @@ export function AnalystDashboard() {
         {queue && user ? (
           <ReportTable
             reports={queue}
+            compact
             actions={(report) => (
               <ReportActions
                 report={report}

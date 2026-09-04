@@ -7,6 +7,8 @@ export type BadgeVariant =
   | "medium"
   | "high"
   | "critical"
+  // priority (shares low/medium/high above; urgent is priority-only)
+  | "urgent"
   // status
   | "new"
   | "in_review"
@@ -32,6 +34,7 @@ const variantClasses: Record<BadgeVariant, string> = {
   medium: "bg-accent-blue/15 text-accent-blue border border-accent-blue/30",
   high: "bg-amber/15 text-amber border border-amber/30",
   critical: "bg-danger/15 text-danger border border-danger/30",
+  urgent: "bg-danger/15 text-danger border border-danger/30",
 
   // status
   new: "bg-muted/15 text-muted border border-muted/30",
