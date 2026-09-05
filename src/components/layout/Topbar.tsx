@@ -1,8 +1,11 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { ExternalLink, LogOut } from "lucide-react";
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import { Bell, ExternalLink, LogOut } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
+import { api } from "@/lib/api";
 import { formatUserName } from "@/lib/format";
 import { useAuthStore } from "@/store/authStore";
 
@@ -12,8 +15,21 @@ export interface TopbarProps {
 
 export function Topbar({ title }: TopbarProps) {
   const router = useRouter();
+  const pathname = usePathname();
   const user = useAuthStore((s) => s.user);
   const clear = useAuthStore((s) => s.clear);
+  const [unread, setUnread] = useState(0);
+
+  // Refetched on navigation rather than polled - a route change is the
+  // moment the count most plausibly went stale (e.g. after reading them),
+  // and it avoids a timer running on every dashboard page.
+  useEffect(() => {
+    if (!user) return;
+    api
+      .get<{ unread_count: number }>("/notifications/unread-count/")
+      .then((res) => setUnread(res.data.unread_count))
+      .catch(() => setUnread(0));
+  }, [user, pathname]);
 
   const handleLogout = () => {
     clear();
@@ -33,6 +49,19 @@ export function Topbar({ title }: TopbarProps) {
           <ExternalLink size={14} />
           View Website
         </a>
+        <Link
+          href="/dashboard/notifications"
+          aria-label={unread > 0 ? `Notifications (${unread} unread)` : "Notifications"}
+          title="Notifications"
+          className="relative text-muted transition-colors hover:text-accent"
+        >
+          <Bell size={18} />
+          {unread > 0 && (
+            <span className="absolute -right-1.5 -top-1.5 flex min-w-4 items-center justify-center rounded-full bg-danger px-1 text-[10px] font-semibold leading-4 text-white">
+              {unread > 9 ? "9+" : unread}
+            </span>
+          )}
+        </Link>
         {user && (
           <>
             <span className="text-sm text-foreground">{formatUserName(user)}</span>

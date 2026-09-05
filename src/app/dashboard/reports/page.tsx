@@ -5,6 +5,7 @@ import Link from "next/link";
 import {
   CheckCircle2,
   Clock,
+  Download,
   FileSearch,
   FileStack,
   LayoutGrid,
@@ -20,13 +21,14 @@ import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { ReportFilters, ReportFiltersState } from "@/components/reports/ReportFilters";
 import { ReportTable } from "@/components/reports/ReportTable";
 import { ReportCard } from "@/components/reports/ReportCard";
-import { buttonClassName } from "@/components/ui/Button";
+import { Button, buttonClassName } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { StatCard } from "@/components/ui/StatCard";
 import { useToast } from "@/components/ui/ToastProvider";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { api } from "@/lib/api";
+import { exportReportsCsv } from "@/lib/attachments";
 import { extractErrorMessage } from "@/lib/errors";
 import { useAuthStore } from "@/store/authStore";
 import type { Report } from "@/types/report";
@@ -57,8 +59,11 @@ export default function ReportsPage() {
   const [reports, setReports] = useState<Report[] | null>(null);
   const [allReports, setAllReports] = useState<Report[] | null>(null);
   const [view, setView] = useState<ViewMode>("table");
+  const [exporting, setExporting] = useState(false);
 
-  const fetchReports = () => {
+  // Shared by the table fetch and the CSV export, so an export always
+  // contains exactly the rows the table is currently showing.
+  const buildParams = (): Record<string, string> => {
     const params: Record<string, string> = {};
     if (debouncedSearch) params.search = debouncedSearch;
     if (filters.severity) params.severity = filters.severity;
@@ -66,14 +71,29 @@ export default function ReportsPage() {
     if (filters.priority) params.priority = filters.priority;
     if (filters.category) params.category = filters.category;
     if (filters.vulnerabilityType) params.vulnerability_type = filters.vulnerabilityType;
+    return params;
+  };
 
+  const fetchReports = () => {
     let cancelled = false;
-    api.get<Report[]>("/reports/", { params }).then((res) => {
+    api.get<Report[]>("/reports/", { params: buildParams() }).then((res) => {
       if (!cancelled) setReports(res.data);
     });
     return () => {
       cancelled = true;
     };
+  };
+
+  const handleExport = async () => {
+    setExporting(true);
+    try {
+      await exportReportsCsv(buildParams());
+      toast.success("Export downloaded");
+    } catch (err) {
+      toast.error(extractErrorMessage(err));
+    } finally {
+      setExporting(false);
+    }
   };
 
   // Stat cards always reflect everything visible to this user, independent
@@ -191,6 +211,15 @@ export default function ReportsPage() {
                   <LayoutGrid size={16} />
                 </button>
               </div>
+              <Button
+                variant="outline"
+                disabled={exporting || !reports?.length}
+                onClick={handleExport}
+                title="Download the current filtered list as CSV"
+              >
+                <Download size={15} />
+                {exporting ? "..." : "Export"}
+              </Button>
               <Link href="/dashboard/reports/new" className={buttonClassName()}>
                 <Plus size={16} />
                 New Report

@@ -28,6 +28,7 @@ import { api } from "@/lib/api";
 import { formatDuration } from "@/lib/date";
 import { useAuthStore } from "@/store/authStore";
 import type {
+  ActivityFeedPage,
   DashboardStats,
   GlobalActivityEntry,
   Report,
@@ -92,8 +93,8 @@ export function AdminDashboard() {
     api.get<DashboardStats>("/dashboard/stats/").then((res) => setStats(res.data));
     api.get<WorkloadRow[]>("/dashboard/workload/").then((res) => setWorkload(res.data));
     api
-      .get<GlobalActivityEntry[]>("/dashboard/activity/", { params: { limit: 12 } })
-      .then((res) => setActivity(res.data));
+      .get<ActivityFeedPage>("/dashboard/activity/", { params: { limit: 12 } })
+      .then((res) => setActivity(res.data.results));
     fetchUnassignedVerified();
   }, [fetchUnassignedVerified]);
 

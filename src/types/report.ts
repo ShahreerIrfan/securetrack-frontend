@@ -73,6 +73,8 @@ export interface DashboardStats {
   total_reports: number;
   by_status: Record<ReportStatus, number>;
   by_severity: Record<Severity, number>;
+  by_category: Record<Category, number>;
+  by_vulnerability_type: Record<VulnerabilityType, number>;
   /** Every field below is admin-only - the API omits them for other roles. */
   users_by_role?: Record<string, number>;
   active_users?: number;
@@ -113,4 +115,34 @@ export interface GlobalActivityEntry {
   action: string;
   detail: string;
   created_at: string;
+}
+
+/** Paginated envelope returned by /api/dashboard/activity/. */
+export interface ActivityFeedPage {
+  count: number;
+  results: GlobalActivityEntry[];
+}
+
+export type NotificationKind =
+  | "status_changed"
+  | "assigned"
+  | "comment"
+  | "report_filed";
+
+/** One in-app alert from /api/notifications/. */
+export interface AppNotification {
+  id: number;
+  kind: NotificationKind;
+  message: string;
+  is_read: boolean;
+  created_at: string;
+  actor: { id: number; first_name: string; last_name: string } | null;
+  report_id: number | null;
+  report_title: string | null;
+}
+
+export interface NotificationPage {
+  count: number;
+  unread_count: number;
+  results: AppNotification[];
 }
