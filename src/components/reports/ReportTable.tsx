@@ -3,7 +3,7 @@
 import { Fragment, ReactNode, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { CalendarClock, ChevronDown, Eye, FileSearch, ShieldAlert } from "lucide-react";
+import { CalendarClock, ChevronDown, Eye, FileSearch, Paperclip, ShieldAlert } from "lucide-react";
 import clsx from "clsx";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Avatar } from "@/components/ui/Avatar";
@@ -147,8 +147,15 @@ export function ReportTable({ reports, actions, emptyState, compact = false }: R
                   <div className="flex max-w-md items-center gap-3">
                     <ReportIcon severity={report.severity} />
                     <div className="min-w-0">
-                      <p className="truncate font-medium text-foreground transition-colors group-hover:text-accent">
-                        {report.title}
+                      <p className="flex items-center gap-1.5 truncate font-medium text-foreground transition-colors group-hover:text-accent">
+                        <span className="truncate">{report.title}</span>
+                        {report.attachment_name && (
+                          <Paperclip
+                            size={12}
+                            className="shrink-0 text-muted"
+                            aria-label="Has attachment"
+                          />
+                        )}
                       </p>
                       <p className="mt-0.5 truncate text-xs text-muted">
                         #{report.id}

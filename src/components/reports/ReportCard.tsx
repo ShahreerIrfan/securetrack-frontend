@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { CalendarClock, MessageSquare } from "lucide-react";
+import { CalendarClock, MessageSquare, Paperclip } from "lucide-react";
 import clsx from "clsx";
 import { Avatar } from "@/components/ui/Avatar";
 import { SeverityBadge } from "./SeverityBadge";
@@ -61,6 +61,11 @@ export function ReportCard({ report }: { report: Report }) {
           </span>
 
           <span className="inline-flex items-center gap-3">
+            {report.attachment_name && (
+              <span aria-label="Has attachment">
+                <Paperclip size={13} />
+              </span>
+            )}
             {report.comments && report.comments.length > 0 && (
               <span className="inline-flex items-center gap-1">
                 <MessageSquare size={13} />

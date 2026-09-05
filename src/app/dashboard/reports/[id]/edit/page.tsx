@@ -4,7 +4,11 @@ import { use, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
-import { ReportForm, ReportFormValues } from "@/components/reports/ReportForm";
+import {
+  ReportForm,
+  ReportFormValues,
+  reportFormValuesToFormData,
+} from "@/components/reports/ReportForm";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { useToast } from "@/components/ui/ToastProvider";
 import { api } from "@/lib/api";
@@ -41,7 +45,14 @@ export default function EditReportPage(props: PageProps<"/dashboard/reports/[id]
 
   const handleSubmit = async (values: ReportFormValues) => {
     try {
-      await api.patch(`/reports/${id}/`, { ...values, due_date: values.due_date || null });
+      // Multipart is only needed when the attachment is actually
+      // changing - plain JSON still handles everything else, including
+      // clearing due_date via null, which multipart can't represent.
+      const payload =
+        values.attachment || values.remove_attachment
+          ? reportFormValuesToFormData(values)
+          : { ...values, due_date: values.due_date || null };
+      await api.patch(`/reports/${id}/`, payload);
       toast.success("Report updated");
       router.push(`/dashboard/reports/${id}`);
     } catch (err) {
@@ -67,6 +78,7 @@ export default function EditReportPage(props: PageProps<"/dashboard/reports/[id]
             }}
             onSubmit={handleSubmit}
             submitLabel="Save Changes"
+            existingAttachmentName={report.attachment_name}
           />
         )}
       </DashboardLayout>

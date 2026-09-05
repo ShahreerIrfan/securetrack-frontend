@@ -3,7 +3,11 @@
 import { useRouter } from "next/navigation";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
-import { ReportForm, ReportFormValues } from "@/components/reports/ReportForm";
+import {
+  ReportForm,
+  ReportFormValues,
+  reportFormValuesToFormData,
+} from "@/components/reports/ReportForm";
 import { useToast } from "@/components/ui/ToastProvider";
 import { api } from "@/lib/api";
 import { extractErrorMessage } from "@/lib/errors";
@@ -16,10 +20,12 @@ export default function NewReportPage() {
 
   const handleSubmit = async (values: ReportFormValues) => {
     try {
-      const { data } = await api.post("/reports/", {
-        ...values,
-        due_date: values.due_date || null,
-      });
+      // Multipart is only needed when there's actually a file to send -
+      // plain JSON is simpler and works fine otherwise.
+      const payload = values.attachment
+        ? reportFormValuesToFormData(values)
+        : { ...values, due_date: values.due_date || null };
+      const { data } = await api.post("/reports/", payload);
       toast.success("Report created");
       router.push(`/dashboard/reports/${data.id}`);
     } catch (err) {

@@ -59,6 +59,9 @@ export interface Report {
   category: Category;
   vulnerability_type: VulnerabilityType;
   due_date: string | null;
+  /** Filename only, never a direct URL - attachments are only fetched
+   * through the authenticated GET /reports/{id}/attachment/ endpoint. */
+  attachment_name: string | null;
   created_by: NestedUser;
   assigned_to: NestedUser | null;
   comments?: Comment[];

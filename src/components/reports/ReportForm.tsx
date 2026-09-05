@@ -7,6 +7,7 @@ import {
   FileText,
   Flag,
   FolderTree,
+  Paperclip,
   ShieldAlert,
   Sparkles,
   UserRound,
@@ -38,6 +39,12 @@ export interface ReportFormValues {
    * entirely (not just empty) when left as "myself", so the backend's
    * default (the requesting admin) applies. */
   created_by?: number;
+  /** A newly-chosen file to upload, replacing any existing attachment. */
+  attachment?: File | null;
+  /** Clears the existing attachment without uploading a new one - the
+   * only way to do that, since multipart form data can't represent
+   * "null" for a file field. */
+  remove_attachment?: boolean;
 }
 
 export interface ReportFormProps {
@@ -48,6 +55,28 @@ export interface ReportFormProps {
    * behalf of another user instead of themselves. Only meaningful on
    * create - the backend doesn't support reassigning created_by later. */
   allowReportingFor?: boolean;
+  /** Filename of the attachment already on this report (edit only). */
+  existingAttachmentName?: string | null;
+}
+
+/** Only needed when a file is actually attached or being removed - a
+ * plain JSON PATCH/POST still works (and still supports clearing
+ * due_date via null) for every other edit, so callers should prefer
+ * that path and fall back to this one only when values.attachment or
+ * values.remove_attachment is set. */
+export function reportFormValuesToFormData(values: ReportFormValues): FormData {
+  const formData = new FormData();
+  formData.append("title", values.title);
+  formData.append("description", values.description);
+  formData.append("severity", values.severity);
+  formData.append("priority", values.priority);
+  formData.append("category", values.category);
+  formData.append("vulnerability_type", values.vulnerability_type);
+  if (values.due_date) formData.append("due_date", values.due_date);
+  if (values.created_by) formData.append("created_by", String(values.created_by));
+  if (values.attachment) formData.append("attachment", values.attachment);
+  if (values.remove_attachment) formData.append("remove_attachment", "true");
+  return formData;
 }
 
 const severityOptions = Object.entries(severityLabels) as [Severity, string][];
@@ -86,6 +115,7 @@ export function ReportForm({
   onSubmit,
   submitLabel = "Submit",
   allowReportingFor = false,
+  existingAttachmentName = null,
 }: ReportFormProps) {
   const [title, setTitle] = useState(initialValues?.title ?? "");
   const [description, setDescription] = useState(initialValues?.description ?? "");
@@ -98,6 +128,8 @@ export function ReportForm({
   const [dueDate, setDueDate] = useState(initialValues?.due_date ?? "");
   const [reportingFor, setReportingFor] = useState<string>("");
   const [users, setUsers] = useState<NestedUser[]>([]);
+  const [attachmentFile, setAttachmentFile] = useState<File | null>(null);
+  const [removeAttachment, setRemoveAttachment] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -123,6 +155,8 @@ export function ReportForm({
         vulnerability_type: vulnerabilityType,
         due_date: dueDate,
         ...(reportingFor ? { created_by: Number(reportingFor) } : {}),
+        ...(attachmentFile ? { attachment: attachmentFile } : {}),
+        ...(removeAttachment ? { remove_attachment: true } : {}),
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
@@ -283,6 +317,58 @@ export function ReportForm({
                 onChange={(e) => setDueDate(e.target.value)}
               />
             </div>
+          </div>
+
+          <div className="h-px bg-border/60" />
+
+          <div>
+            <FieldLabel htmlFor="report-attachment" icon={<Paperclip size={14} />} optional>
+              Attachment
+            </FieldLabel>
+
+            {existingAttachmentName && !attachmentFile && !removeAttachment && (
+              <div className="mb-2 flex items-center justify-between gap-3 rounded-lg border border-border bg-surface-raised/50 px-3 py-2 text-sm text-copy">
+                <span className="inline-flex min-w-0 items-center gap-2 truncate">
+                  <Paperclip size={14} className="shrink-0 text-muted" />
+                  <span className="truncate">{existingAttachmentName}</span>
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setRemoveAttachment(true)}
+                  className="shrink-0 text-xs font-medium text-danger hover:underline"
+                >
+                  Remove
+                </button>
+              </div>
+            )}
+
+            {removeAttachment && (
+              <div className="mb-2 flex items-center justify-between gap-3 rounded-lg border border-dashed border-danger/40 bg-danger/5 px-3 py-2 text-sm text-danger">
+                <span>Attachment will be removed on save</span>
+                <button
+                  type="button"
+                  onClick={() => setRemoveAttachment(false)}
+                  className="shrink-0 text-xs font-medium underline"
+                >
+                  Undo
+                </button>
+              </div>
+            )}
+
+            <input
+              id="report-attachment"
+              type="file"
+              accept=".pdf,.png,.jpg,.jpeg,.gif,.webp,.txt,.log,.csv,.zip,.docx"
+              onChange={(e) => {
+                const file = e.target.files?.[0] ?? null;
+                setAttachmentFile(file);
+                if (file) setRemoveAttachment(false);
+              }}
+              className="block w-full text-sm text-copy file:mr-3 file:rounded-lg file:border-0 file:bg-accent-gradient-soft file:px-3 file:py-2 file:text-sm file:font-medium file:text-accent file:transition-colors hover:file:brightness-110"
+            />
+            <p className="mt-1.5 text-xs text-muted">
+              PDF, image, text, log, CSV, ZIP or DOCX - up to 10MB.
+            </p>
           </div>
 
           {error && (

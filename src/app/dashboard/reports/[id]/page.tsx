@@ -8,8 +8,10 @@ import {
   CalendarClock,
   CalendarPlus,
   Clock,
+  Download,
   Flag,
   FolderTree,
+  Paperclip,
   Settings2,
   ShieldAlert,
   Users,
@@ -25,12 +27,16 @@ import { CommentThread } from "@/components/reports/CommentThread";
 import { ReportActions } from "@/components/reports/ReportActions";
 import { categoryLabels, severityColors, vulnerabilityTypeLabels } from "@/components/reports/labels";
 import { Avatar } from "@/components/ui/Avatar";
+import { Button } from "@/components/ui/Button";
 import { Tabs } from "@/components/ui/Tabs";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { api } from "@/lib/api";
+import { downloadReportAttachment } from "@/lib/attachments";
 import { formatUserName } from "@/lib/format";
 import { formatRelativeTime } from "@/lib/date";
 import { useAuthStore } from "@/store/authStore";
+import { useToast } from "@/components/ui/ToastProvider";
+import { extractErrorMessage } from "@/lib/errors";
 import type { ActivityLogEntry, Comment, Report } from "@/types/report";
 
 function isOverdue(report: Report): boolean {
@@ -89,10 +95,24 @@ function Panel({
 export default function ReportDetailPage(props: PageProps<"/dashboard/reports/[id]">) {
   const { id } = use(props.params);
   const user = useAuthStore((s) => s.user);
+  const toast = useToast();
 
   const [report, setReport] = useState<Report | null>(null);
   const [activity, setActivity] = useState<ActivityLogEntry[]>([]);
   const [comments, setComments] = useState<Comment[]>([]);
+  const [downloading, setDownloading] = useState(false);
+
+  const handleDownload = async () => {
+    if (!report?.attachment_name) return;
+    setDownloading(true);
+    try {
+      await downloadReportAttachment(report.id, report.attachment_name);
+    } catch (err) {
+      toast.error(extractErrorMessage(err));
+    } finally {
+      setDownloading(false);
+    }
+  };
 
   const fetchActivity = () => {
     api.get<ActivityLogEntry[]>(`/reports/${id}/activity/`).then((res) => setActivity(res.data));
@@ -231,6 +251,27 @@ export default function ReportDetailPage(props: PageProps<"/dashboard/reports/[i
                     />
                   </div>
                 </Panel>
+
+                {report.attachment_name && (
+                  <Panel icon={<Paperclip size={13} />} title="Attachment">
+                    <div className="mt-2 flex items-center justify-between gap-3 rounded-lg border border-border bg-surface-raised/50 px-3 py-2">
+                      <span className="inline-flex min-w-0 items-center gap-2 truncate text-sm text-copy">
+                        <Paperclip size={14} className="shrink-0 text-muted" />
+                        <span className="truncate">{report.attachment_name}</span>
+                      </span>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="shrink-0 px-2.5 py-1 text-xs"
+                        disabled={downloading}
+                        onClick={handleDownload}
+                      >
+                        <Download size={13} />
+                        {downloading ? "..." : "Download"}
+                      </Button>
+                    </div>
+                  </Panel>
+                )}
 
                 <Panel icon={<ShieldAlert size={13} />} title="Classification">
                   <div className="divide-y divide-border/60">
