@@ -7,6 +7,7 @@ import { CalendarClock, ChevronDown, Eye, FileSearch, Paperclip, ShieldAlert } f
 import clsx from "clsx";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Avatar } from "@/components/ui/Avatar";
+import { formatUserName } from "@/lib/format";
 import { SeverityBadge } from "./SeverityBadge";
 import { StatusBadge } from "./StatusBadge";
 import { PriorityBadge } from "./PriorityBadge";
@@ -36,7 +37,7 @@ function formatDay(iso: string): string {
 }
 
 const headCell =
-  "px-4 py-2.5 text-left text-[10px] font-semibold uppercase tracking-[0.12em] text-muted";
+  "px-3 py-2 text-left text-[10px] font-semibold uppercase tracking-[0.12em] text-muted";
 
 /** Small coloured square that stands in for a thumbnail - tinted by
  * severity so the same "how bad is this" signal from the row edge in
@@ -46,7 +47,7 @@ function ReportIcon({ severity }: { severity: Report["severity"] }) {
   return (
     <span
       aria-hidden
-      className="flex size-9 shrink-0 items-center justify-center rounded-lg"
+      className="flex size-8 shrink-0 items-center justify-center rounded-lg"
       style={{ backgroundColor: `color-mix(in srgb, ${color} 16%, transparent)`, color }}
     >
       <ShieldAlert size={16} />
@@ -102,11 +103,9 @@ export function ReportTable({ reports, actions, emptyState, compact = false }: R
                 />
               </th>
             )}
-            {!compact && <th className={headCell}>SL</th>}
+            {!compact && <th className={clsx(headCell, "px-2")}>SL</th>}
             <th className={headCell}>Report</th>
-            {!compact && <th className={headCell}>Reported By</th>}
-            {!compact && <th className={headCell}>Category</th>}
-            {!compact && <th className={headCell}>Type</th>}
+            {!compact && <th className={headCell}>By</th>}
             <th className={headCell}>Severity</th>
             <th className={headCell}>Status</th>
             {!compact && <th className={headCell}>Priority</th>}
@@ -126,7 +125,7 @@ export function ReportTable({ reports, actions, emptyState, compact = false }: R
               >
                 {!compact && (
                   <td
-                    className="px-4 py-3"
+                    className="px-3 py-2.5"
                     onClick={(e) => e.stopPropagation()}
                   >
                     <input
@@ -140,11 +139,11 @@ export function ReportTable({ reports, actions, emptyState, compact = false }: R
                 )}
 
                 {!compact && (
-                  <td className="px-4 py-3 text-xs text-muted">{i + 1}</td>
+                  <td className="px-2 py-2.5 text-xs text-muted">{i + 1}</td>
                 )}
 
-                <td className="py-3 pl-4 pr-4">
-                  <div className="flex max-w-md items-center gap-3">
+                <td className="py-2.5 pl-3 pr-3">
+                  <div className="flex max-w-52 items-center gap-2.5">
                     <ReportIcon severity={report.severity} />
                     <div className="min-w-0">
                       <p className="flex items-center gap-1.5 truncate font-medium text-foreground transition-colors group-hover:text-accent">
@@ -158,64 +157,47 @@ export function ReportTable({ reports, actions, emptyState, compact = false }: R
                         )}
                       </p>
                       <p className="mt-0.5 truncate text-xs text-muted">
-                        #{report.id}
-                        {compact ? ` · ${categoryLabels[report.category]}` : ""}
+                        #{report.id} · {categoryLabels[report.category]}
                       </p>
                     </div>
                   </div>
                 </td>
 
                 {!compact && (
-                  <td className="px-4 py-3">
-                    <span className="inline-flex items-center gap-2">
+                  <td className="px-3 py-2.5">
+                    <span title={formatUserName(report.created_by)}>
                       <Avatar user={report.created_by} size="sm" />
-                      <span className="text-xs text-copy">{report.created_by.first_name}</span>
                     </span>
                   </td>
                 )}
 
-                {!compact && (
-                  <td className="px-4 py-3 text-xs text-copy">
-                    {categoryLabels[report.category]}
-                  </td>
-                )}
-
-                {!compact && (
-                  <td className="px-4 py-3 text-xs text-copy">
-                    {vulnerabilityTypeLabels[report.vulnerability_type]}
-                  </td>
-                )}
-
-                <td className="px-4 py-3">
+                <td className="px-3 py-2.5">
                   <SeverityBadge severity={report.severity} />
                 </td>
 
-                <td className="px-4 py-3">
+                <td className="px-3 py-2.5">
                   <StatusBadge status={report.status} />
                 </td>
 
                 {!compact && (
-                  <td className="px-4 py-3">
+                  <td className="px-3 py-2.5">
                     <PriorityBadge priority={report.priority} />
                   </td>
                 )}
 
                 {!compact && (
-                  <td className="px-4 py-3">
+                  <td className="px-3 py-2.5">
                     {report.assigned_to ? (
-                      <span className="inline-flex items-center gap-2">
+                      <span title={formatUserName(report.assigned_to)}>
                         <Avatar user={report.assigned_to} size="sm" />
-                        <span className="text-xs text-copy">
-                          {report.assigned_to.first_name}
-                        </span>
                       </span>
                     ) : (
-                      <span className="text-xs text-muted">Unassigned</span>
+                      <span className="text-xs text-muted">—</span>
                     )}
                   </td>
                 )}
 
-                <td className="whitespace-nowrap px-4 py-3 text-xs">
+                <td className="whitespace-nowrap px-3 py-2.5 text-xs">
                   {compact ? (
                     <span className="text-muted">{formatDay(report.created_at)}</span>
                   ) : report.due_date ? (
@@ -233,20 +215,20 @@ export function ReportTable({ reports, actions, emptyState, compact = false }: R
                   )}
                 </td>
 
-                <td className="px-4 py-3">
+                <td className="px-3 py-2.5">
                   {/* Stops an action click from also firing the row's
                       navigate-to-detail handler. */}
                   <div
-                    className="flex items-center justify-end gap-1.5"
+                    className="flex items-center justify-end gap-1"
                     onClick={(e) => e.stopPropagation()}
                   >
                     <Link
                       href={`/dashboard/reports/${report.id}`}
                       aria-label={`View report: ${report.title}`}
                       title="View report"
-                      className="inline-flex items-center justify-center rounded-lg border border-border p-1.5 text-muted transition-colors hover:border-accent hover:text-accent"
+                      className="inline-flex items-center justify-center rounded-lg border border-border p-1 text-muted transition-colors hover:border-accent hover:text-accent"
                     >
-                      <Eye size={15} />
+                      <Eye size={14} />
                     </Link>
                     {actions?.(report)}
                     {!compact && (
@@ -256,10 +238,10 @@ export function ReportTable({ reports, actions, emptyState, compact = false }: R
                         onClick={() =>
                           setExpanded((prev) => (prev === report.id ? null : report.id))
                         }
-                        className="inline-flex items-center justify-center rounded-lg border border-border p-1.5 text-muted transition-colors hover:border-accent hover:text-accent"
+                        className="inline-flex items-center justify-center rounded-lg border border-border p-1 text-muted transition-colors hover:border-accent hover:text-accent"
                       >
                         <ChevronDown
-                          size={15}
+                          size={14}
                           className={clsx(
                             "transition-transform",
                             expanded === report.id && "rotate-180",
@@ -273,8 +255,14 @@ export function ReportTable({ reports, actions, emptyState, compact = false }: R
 
               {!compact && expanded === report.id && (
                 <tr className="border-b border-border/50 bg-surface-raised/30">
-                  <td colSpan={11} className="px-4 py-4 pl-16">
-                    <p className="max-w-3xl whitespace-pre-line text-sm leading-relaxed text-copy">
+                  <td colSpan={10} className="px-4 py-4 pl-16">
+                    <p className="mb-2 text-xs text-muted">
+                      Vulnerability Type:{" "}
+                      <span className="text-copy">
+                        {vulnerabilityTypeLabels[report.vulnerability_type]}
+                      </span>
+                    </p>
+                    <p className="max-w-3xl whitespace-pre-line wrap-break-word text-sm leading-relaxed text-copy">
                       {report.description || (
                         <span className="text-muted">No description provided.</span>
                       )}

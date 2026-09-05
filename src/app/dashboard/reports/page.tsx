@@ -223,18 +223,18 @@ export default function ReportsPage() {
                       href={`/dashboard/reports/${report.id}/edit`}
                       aria-label={`Edit report: ${report.title}`}
                       title="Edit report"
-                      className="inline-flex items-center justify-center rounded-lg border border-border p-1.5 text-muted transition-colors hover:border-accent hover:text-accent"
+                      className="inline-flex items-center justify-center rounded-lg border border-border p-1 text-muted transition-colors hover:border-accent hover:text-accent"
                     >
-                      <Pencil size={15} />
+                      <Pencil size={14} />
                     </Link>
                     <button
                       type="button"
                       aria-label={`Delete report: ${report.title}`}
                       title="Delete report"
                       onClick={() => handleDelete(report)}
-                      className="inline-flex items-center justify-center rounded-lg border border-border p-1.5 text-muted transition-colors hover:border-danger hover:text-danger"
+                      className="inline-flex items-center justify-center rounded-lg border border-border p-1 text-muted transition-colors hover:border-danger hover:text-danger"
                     >
-                      <Trash2 size={15} />
+                      <Trash2 size={14} />
                     </button>
                   </>
                 )
