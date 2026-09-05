@@ -1,4 +1,4 @@
-import type { Category, Priority, ReportStatus, Severity } from "@/types/report";
+import type { Category, Priority, ReportStatus, Severity, VulnerabilityType } from "@/types/report";
 
 export const severityLabels: Record<Severity, string> = {
   low: "Low",
@@ -28,6 +28,24 @@ export const categoryLabels: Record<Category, string> = {
   network: "Network",
   physical_security: "Physical Security",
   social_engineering: "Social Engineering",
+  other: "Other",
+};
+
+export const vulnerabilityTypeLabels: Record<VulnerabilityType, string> = {
+  sql_injection: "SQL Injection",
+  xss: "Cross-Site Scripting (XSS)",
+  csrf: "Cross-Site Request Forgery (CSRF)",
+  broken_authentication: "Broken Authentication",
+  data_exposure: "Sensitive Data Exposure",
+  misconfiguration: "Security Misconfiguration",
+  insecure_api: "Insecure API",
+  malware: "Malware Infection",
+  ransomware: "Ransomware",
+  phishing: "Phishing Attack",
+  ddos: "DDoS Attack",
+  mitm: "Man-in-the-Middle Attack",
+  insider_threat: "Insider Threat",
+  zero_day: "Zero-Day Exploit",
   other: "Other",
 };
 

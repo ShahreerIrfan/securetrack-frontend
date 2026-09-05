@@ -7,6 +7,22 @@ export type Category =
   | "physical_security"
   | "social_engineering"
   | "other";
+export type VulnerabilityType =
+  | "sql_injection"
+  | "xss"
+  | "csrf"
+  | "broken_authentication"
+  | "data_exposure"
+  | "misconfiguration"
+  | "insecure_api"
+  | "malware"
+  | "ransomware"
+  | "phishing"
+  | "ddos"
+  | "mitm"
+  | "insider_threat"
+  | "zero_day"
+  | "other";
 
 export interface NestedUser {
   id: number;
@@ -41,6 +57,7 @@ export interface Report {
   status: ReportStatus;
   priority: Priority;
   category: Category;
+  vulnerability_type: VulnerabilityType;
   due_date: string | null;
   created_by: NestedUser;
   assigned_to: NestedUser | null;

@@ -2,7 +2,7 @@
 
 import { use, useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, CalendarClock, Clock, FolderTree, UserRound } from "lucide-react";
+import { ArrowLeft, CalendarClock, Clock, FolderTree, ShieldAlert, UserRound } from "lucide-react";
 import clsx from "clsx";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
@@ -12,7 +12,7 @@ import { PriorityBadge } from "@/components/reports/PriorityBadge";
 import { ActivityTimeline } from "@/components/reports/ActivityTimeline";
 import { CommentThread } from "@/components/reports/CommentThread";
 import { ReportActions } from "@/components/reports/ReportActions";
-import { categoryLabels, severityColors } from "@/components/reports/labels";
+import { categoryLabels, severityColors, vulnerabilityTypeLabels } from "@/components/reports/labels";
 import { Avatar } from "@/components/ui/Avatar";
 import { Tabs } from "@/components/ui/Tabs";
 import { Skeleton } from "@/components/ui/Skeleton";
@@ -202,6 +202,10 @@ export default function ReportDetailPage(props: PageProps<"/dashboard/reports/[i
                     ) : (
                       <span className="text-muted">Unassigned</span>
                     )}
+                  </MetaRow>
+
+                  <MetaRow icon={<ShieldAlert size={13} />} label="Vulnerability Type">
+                    {vulnerabilityTypeLabels[report.vulnerability_type]}
                   </MetaRow>
 
                   <MetaRow icon={<FolderTree size={13} />} label="Category">

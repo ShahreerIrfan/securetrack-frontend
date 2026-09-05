@@ -62,6 +62,7 @@ export default function EditReportPage(props: PageProps<"/dashboard/reports/[id]
               severity: report.severity,
               priority: report.priority,
               category: report.category,
+              vulnerability_type: report.vulnerability_type,
               due_date: report.due_date ?? "",
             }}
             onSubmit={handleSubmit}
