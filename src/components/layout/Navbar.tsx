@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { Menu, ShieldCheck, X } from "lucide-react";
 import { ArrowButton } from "@/components/marketing/ArrowButton";
+import { useAuthStore } from "@/store/authStore";
 import { MarketingTopBar } from "./MarketingTopBar";
 
 const navLinks = [
@@ -16,6 +17,7 @@ const navLinks = [
 
 export function Navbar() {
   const [open, setOpen] = useState(false);
+  const isLoggedIn = useAuthStore((s) => Boolean(s.user));
 
   return (
     <header className="sticky top-0 z-50 bg-white shadow-sm">
@@ -44,12 +46,14 @@ export function Navbar() {
         </nav>
 
         <div className="flex items-center gap-3">
-          <Link
-            href="/login"
-            className="hidden text-[15px] font-medium text-ink transition-colors hover:text-brand sm:block"
-          >
-            Log In
-          </Link>
+          {!isLoggedIn && (
+            <Link
+              href="/login"
+              className="hidden text-[15px] font-medium text-ink transition-colors hover:text-brand sm:block"
+            >
+              Log In
+            </Link>
+          )}
           <ArrowButton href="/register" className="hidden sm:inline-flex">
             Get Started
           </ArrowButton>
@@ -79,13 +83,15 @@ export function Navbar() {
             </Link>
           ))}
           <div className="mt-4 flex items-center gap-3">
-            <Link
-              href="/login"
-              onClick={() => setOpen(false)}
-              className="text-[15px] font-medium text-ink"
-            >
-              Log In
-            </Link>
+            {!isLoggedIn && (
+              <Link
+                href="/login"
+                onClick={() => setOpen(false)}
+                className="text-[15px] font-medium text-ink"
+              >
+                Log In
+              </Link>
+            )}
             <ArrowButton href="/register">Get Started</ArrowButton>
           </div>
         </nav>

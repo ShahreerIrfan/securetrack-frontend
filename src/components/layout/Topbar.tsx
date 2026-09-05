@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { LogOut } from "lucide-react";
+import { ExternalLink, LogOut } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 import { formatUserName } from "@/lib/format";
 import { useAuthStore } from "@/store/authStore";
@@ -24,6 +24,15 @@ export function Topbar({ title }: TopbarProps) {
     <header className="flex h-16 shrink-0 items-center justify-between border-b border-border bg-background px-6">
       <h1 className="text-lg font-semibold text-foreground">{title}</h1>
       <div className="flex items-center gap-3">
+        <a
+          href="/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-sm font-medium text-muted transition-colors hover:border-accent/40 hover:text-accent"
+        >
+          <ExternalLink size={14} />
+          View Website
+        </a>
         {user && (
           <>
             <span className="text-sm text-foreground">{formatUserName(user)}</span>
