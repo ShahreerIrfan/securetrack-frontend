@@ -2,7 +2,18 @@
 
 import { use, useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, CalendarClock, Clock, FolderTree, ShieldAlert, UserRound } from "lucide-react";
+import {
+  AlertTriangle,
+  ArrowLeft,
+  CalendarClock,
+  CalendarPlus,
+  Clock,
+  Flag,
+  FolderTree,
+  Settings2,
+  ShieldAlert,
+  Users,
+} from "lucide-react";
 import clsx from "clsx";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
@@ -28,7 +39,9 @@ function isOverdue(report: Report): boolean {
   return new Date(report.due_date) < new Date();
 }
 
-/** One labelled row in the right-hand meta panel. */
+/** One labelled row inside a sidebar panel - icon + label on the left,
+ * value on the right, same convention across every panel below so the
+ * sidebar reads as one system rather than four different ones. */
 function MetaRow({
   icon,
   label,
@@ -45,6 +58,30 @@ function MetaRow({
         {label}
       </span>
       <span className="text-right text-sm text-copy">{children}</span>
+    </div>
+  );
+}
+
+/** A titled sidebar card - the whole detail page is built from a stack
+ * of these plus the hero, rather than one catch-all "Details" block, so
+ * each concern (classification, people, timeline, actions) reads as its
+ * own scannable unit. */
+function Panel({
+  icon,
+  title,
+  children,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="rounded-xl border border-border bg-surface p-5">
+      <h2 className="mb-1 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted">
+        <span className="text-accent">{icon}</span>
+        {title}
+      </h2>
+      {children}
     </div>
   );
 }
@@ -79,9 +116,9 @@ export default function ReportDetailPage(props: PageProps<"/dashboard/reports/[i
     <ProtectedRoute>
       <DashboardLayout title={report?.title ?? "Report"}>
         {!report || !user ? (
-          <Skeleton variant="card" className="max-w-5xl" />
+          <Skeleton variant="card" className="max-w-7xl" />
         ) : (
-          <div className="max-w-5xl space-y-6">
+          <div className="max-w-7xl space-y-6">
             <Link
               href="/dashboard/reports"
               className="inline-flex items-center gap-1.5 text-xs text-muted transition-colors hover:text-accent"
@@ -120,10 +157,6 @@ export default function ReportDetailPage(props: PageProps<"/dashboard/reports/[i
                   {report.title}
                 </h1>
 
-                <p className="mt-3 max-w-2xl whitespace-pre-line text-sm leading-relaxed text-copy">
-                  {report.description}
-                </p>
-
                 <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-border/60 pt-4 text-xs text-muted">
                   <span className="inline-flex items-center gap-2">
                     <Avatar user={report.created_by} size="sm" />
@@ -138,21 +171,20 @@ export default function ReportDetailPage(props: PageProps<"/dashboard/reports/[i
               </div>
             </section>
 
-            <div className="grid gap-6 lg:grid-cols-[1fr_18rem] lg:items-start">
-              <div className="space-y-6">
-                <div className="rounded-xl border border-border bg-surface p-5">
+            <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-start">
+              <div className="min-w-0 space-y-6">
+                <div className="rounded-xl border border-border bg-surface p-5 sm:p-6">
                   <h2 className="mb-3 text-xs font-semibold uppercase tracking-[0.12em] text-muted">
-                    Actions
+                    Description
                   </h2>
-                  <ReportActions
-                    report={report}
-                    currentUserId={user.id}
-                    role={user.role}
-                    onUpdated={handleReportUpdated}
-                  />
+                  <p className="max-w-3xl whitespace-pre-line wrap-break-word text-sm leading-relaxed text-copy">
+                    {report.description || (
+                      <span className="text-muted">No description provided.</span>
+                    )}
+                  </p>
                 </div>
 
-                <div className="rounded-xl border border-border bg-surface p-5">
+                <div className="rounded-xl border border-border bg-surface p-5 sm:p-6">
                   <Tabs
                     items={[
                       {
@@ -188,46 +220,77 @@ export default function ReportDetailPage(props: PageProps<"/dashboard/reports/[i
                 </div>
               </div>
 
-              <aside className="rounded-xl border border-border bg-surface p-5">
-                <h2 className="mb-1 text-xs font-semibold uppercase tracking-[0.12em] text-muted">
-                  Details
-                </h2>
-                <div className="divide-y divide-border/60">
-                  <MetaRow icon={<UserRound size={13} />} label="Assignee">
-                    {report.assigned_to ? (
+              <div className="space-y-6">
+                <Panel icon={<Settings2 size={13} />} title="Actions">
+                  <div className="mt-2">
+                    <ReportActions
+                      report={report}
+                      currentUserId={user.id}
+                      role={user.role}
+                      onUpdated={handleReportUpdated}
+                    />
+                  </div>
+                </Panel>
+
+                <Panel icon={<ShieldAlert size={13} />} title="Classification">
+                  <div className="divide-y divide-border/60">
+                    <MetaRow icon={<AlertTriangle size={13} />} label="Severity">
+                      <SeverityBadge severity={report.severity} />
+                    </MetaRow>
+                    <MetaRow icon={<Flag size={13} />} label="Priority">
+                      <PriorityBadge priority={report.priority} />
+                    </MetaRow>
+                    <MetaRow icon={<ShieldAlert size={13} />} label="Type">
+                      {vulnerabilityTypeLabels[report.vulnerability_type]}
+                    </MetaRow>
+                    <MetaRow icon={<FolderTree size={13} />} label="Category">
+                      {categoryLabels[report.category]}
+                    </MetaRow>
+                  </div>
+                </Panel>
+
+                <Panel icon={<Users size={13} />} title="People">
+                  <div className="divide-y divide-border/60">
+                    <MetaRow icon={<Users size={13} />} label="Reported By">
                       <span className="inline-flex items-center gap-2">
-                        <Avatar user={report.assigned_to} size="sm" />
-                        {formatUserName(report.assigned_to)}
+                        <Avatar user={report.created_by} size="sm" />
+                        {formatUserName(report.created_by)}
                       </span>
-                    ) : (
-                      <span className="text-muted">Unassigned</span>
-                    )}
-                  </MetaRow>
+                    </MetaRow>
+                    <MetaRow icon={<Users size={13} />} label="Assignee">
+                      {report.assigned_to ? (
+                        <span className="inline-flex items-center gap-2">
+                          <Avatar user={report.assigned_to} size="sm" />
+                          {formatUserName(report.assigned_to)}
+                        </span>
+                      ) : (
+                        <span className="text-muted">Unassigned</span>
+                      )}
+                    </MetaRow>
+                  </div>
+                </Panel>
 
-                  <MetaRow icon={<ShieldAlert size={13} />} label="Vulnerability Type">
-                    {vulnerabilityTypeLabels[report.vulnerability_type]}
-                  </MetaRow>
-
-                  <MetaRow icon={<FolderTree size={13} />} label="Category">
-                    {categoryLabels[report.category]}
-                  </MetaRow>
-
-                  <MetaRow icon={<CalendarClock size={13} />} label="Due">
-                    {report.due_date ? (
-                      <span className={clsx(isOverdue(report) && "font-semibold text-danger")}>
-                        {new Date(report.due_date).toLocaleDateString()}
-                        {isOverdue(report) && " · overdue"}
-                      </span>
-                    ) : (
-                      <span className="text-muted">Not set</span>
-                    )}
-                  </MetaRow>
-
-                  <MetaRow icon={<Clock size={13} />} label="Last updated">
-                    {formatRelativeTime(report.updated_at)}
-                  </MetaRow>
-                </div>
-              </aside>
+                <Panel icon={<CalendarPlus size={13} />} title="Timeline">
+                  <div className="divide-y divide-border/60">
+                    <MetaRow icon={<CalendarPlus size={13} />} label="Created">
+                      {new Date(report.created_at).toLocaleDateString()}
+                    </MetaRow>
+                    <MetaRow icon={<CalendarClock size={13} />} label="Due">
+                      {report.due_date ? (
+                        <span className={clsx(isOverdue(report) && "font-semibold text-danger")}>
+                          {new Date(report.due_date).toLocaleDateString()}
+                          {isOverdue(report) && " · overdue"}
+                        </span>
+                      ) : (
+                        <span className="text-muted">Not set</span>
+                      )}
+                    </MetaRow>
+                    <MetaRow icon={<Clock size={13} />} label="Last Updated">
+                      {formatRelativeTime(report.updated_at)}
+                    </MetaRow>
+                  </div>
+                </Panel>
+              </div>
             </div>
           </div>
         )}

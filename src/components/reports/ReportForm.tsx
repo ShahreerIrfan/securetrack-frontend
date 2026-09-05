@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, ReactNode, useState } from "react";
+import { FormEvent, ReactNode, useEffect, useState } from "react";
 import {
   AlertTriangle,
   CalendarClock,
@@ -9,12 +9,15 @@ import {
   FolderTree,
   ShieldAlert,
   Sparkles,
+  UserRound,
 } from "lucide-react";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
 import { Select } from "@/components/ui/Select";
 import { Button } from "@/components/ui/Button";
-import type { Category, Priority, Severity, VulnerabilityType } from "@/types/report";
+import { api } from "@/lib/api";
+import { formatUserName } from "@/lib/format";
+import type { Category, NestedUser, Priority, Severity, VulnerabilityType } from "@/types/report";
 import {
   categoryLabels,
   priorityLabels,
@@ -31,12 +34,20 @@ export interface ReportFormValues {
   vulnerability_type: VulnerabilityType;
   /** Empty string means "no due date" - converted to null on submit. */
   due_date: string;
+  /** Admin-only: who this report is being filed on behalf of. Omitted
+   * entirely (not just empty) when left as "myself", so the backend's
+   * default (the requesting admin) applies. */
+  created_by?: number;
 }
 
 export interface ReportFormProps {
   initialValues?: Partial<ReportFormValues>;
   onSubmit: (values: ReportFormValues) => Promise<void>;
   submitLabel?: string;
+  /** Shows a "Reporting For" select so an admin can file this report on
+   * behalf of another user instead of themselves. Only meaningful on
+   * create - the backend doesn't support reassigning created_by later. */
+  allowReportingFor?: boolean;
 }
 
 const severityOptions = Object.entries(severityLabels) as [Severity, string][];
@@ -70,7 +81,12 @@ function FieldLabel({
   );
 }
 
-export function ReportForm({ initialValues, onSubmit, submitLabel = "Submit" }: ReportFormProps) {
+export function ReportForm({
+  initialValues,
+  onSubmit,
+  submitLabel = "Submit",
+  allowReportingFor = false,
+}: ReportFormProps) {
   const [title, setTitle] = useState(initialValues?.title ?? "");
   const [description, setDescription] = useState(initialValues?.description ?? "");
   const [severity, setSeverity] = useState<Severity>(initialValues?.severity ?? "medium");
@@ -80,8 +96,18 @@ export function ReportForm({ initialValues, onSubmit, submitLabel = "Submit" }: 
     initialValues?.vulnerability_type ?? "other",
   );
   const [dueDate, setDueDate] = useState(initialValues?.due_date ?? "");
+  const [reportingFor, setReportingFor] = useState<string>("");
+  const [users, setUsers] = useState<NestedUser[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!allowReportingFor) return;
+    api
+      .get<NestedUser[]>("/auth/users/", { params: { role: "user" } })
+      .then((res) => setUsers(res.data))
+      .catch(() => setUsers([]));
+  }, [allowReportingFor]);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -96,6 +122,7 @@ export function ReportForm({ initialValues, onSubmit, submitLabel = "Submit" }: 
         category,
         vulnerability_type: vulnerabilityType,
         due_date: dueDate,
+        ...(reportingFor ? { created_by: Number(reportingFor) } : {}),
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
@@ -152,6 +179,26 @@ export function ReportForm({ initialValues, onSubmit, submitLabel = "Submit" }: 
               onChange={(e) => setDescription(e.target.value)}
             />
           </div>
+
+          {allowReportingFor && (
+            <div>
+              <FieldLabel htmlFor="report-reporting-for" icon={<UserRound size={14} />} optional>
+                Reporting For
+              </FieldLabel>
+              <Select
+                id="report-reporting-for"
+                value={reportingFor}
+                onChange={(e) => setReportingFor(e.target.value)}
+              >
+                <option value="">Myself</option>
+                {users.map((u) => (
+                  <option key={u.id} value={u.id}>
+                    {formatUserName(u)} ({u.email})
+                  </option>
+                ))}
+              </Select>
+            </div>
+          )}
 
           <div className="h-px bg-border/60" />
 
