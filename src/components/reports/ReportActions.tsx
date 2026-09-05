@@ -116,7 +116,7 @@ export function ReportActions({
       )}
 
       {role === "admin" && (
-        <div className="flex flex-wrap gap-3">
+        <div className={compact ? "flex flex-wrap gap-3" : "flex flex-col gap-3"}>
           <Select
             disabled={busy}
             value={report.status}
@@ -124,7 +124,7 @@ export function ReportActions({
               const status = e.target.value as ReportStatus;
               if (status !== "assigned") patchStatus({ status });
             }}
-            className={selectClass ?? "sm:max-w-44"}
+            className={selectClass ?? "w-full"}
           >
             {statusOptions.map(([value, label]) => (
               <option key={value} value={value}>
@@ -145,7 +145,7 @@ export function ReportActions({
                 patchStatus({ status: "assigned", assigned_to: id });
               }
             }}
-            className={selectClass ?? "sm:max-w-56"}
+            className={selectClass ?? "w-full"}
           >
             <option value="">Assign to developer...</option>
             {assigneeOptions.map((dev) => (
