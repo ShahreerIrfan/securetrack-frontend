@@ -1,6 +1,6 @@
 # SecureTrack — Frontend
 
-Next.js (App Router) frontend for SecureTrack, a vulnerability/incident
+Next.js (App Router) client for SecureTrack, a vulnerability/incident
 report tracking system with JWT authentication and 4 user roles: User,
 Analyst, Developer, Admin.
 
@@ -8,60 +8,41 @@ Paired backend: https://github.com/ShahreerIrfan/securetrack-backend
 
 ## Stack
 
-- Next.js 16 (App Router, TypeScript)
+- Next.js 16 (App Router) + TypeScript
 - Tailwind CSS v4
-- Zustand (auth state, persisted to localStorage)
-- axios (with a refresh-on-401 interceptor)
-- recharts (dashboard charts)
+- Zustand (auth state)
+- axios (with 401-refresh interceptor)
+- recharts
 
 ## Local setup
-
-The backend must be running first — see its own README for setup
-(`python manage.py runserver`, default `http://localhost:8000/`).
 
 ```bash
 npm install
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000). Register an account
-from the UI, or use a superuser created on the backend (promoted to
-`role="admin"` per the backend README) to log in with full access.
+Runs at `http://localhost:3000`. Talks to a backend at
+`http://localhost:8000/api` by default - see below to point it elsewhere.
 
 ## Environment variables
 
-Copy `.env.example` to `.env.local` and adjust if your backend isn't on
-the default local address:
-
-| Variable | Default | Purpose |
+| Variable | Local default | Set in production to |
 |---|---|---|
-| `NEXT_PUBLIC_API_URL` | `http://localhost:8000/api` | Base URL the frontend calls for the backend API. Public (`NEXT_PUBLIC_`) because it's used from the browser, and is baked into the client bundle at build time — set it before `npm run build` for a non-local deploy, not after. |
+| `NEXT_PUBLIC_API_URL` | `http://localhost:8000/api` | your deployed backend's `/api` URL |
 
-No other environment variables are required; there are no other secrets
-on the frontend (the JWT itself lives in the browser's localStorage, not
-in build-time config).
+Copy `.env.example` to `.env.local` for local overrides. This is the only
+environment variable the app reads.
 
-## Structure
+## Deployment (Vercel)
 
-```
-src/
-  app/            routes only - pages compose components, no raw markup
-  components/
-    ui/           theme-agnostic primitives (Button, Table, Modal, ...)
-    layout/       Navbar/Footer (marketing) and Sidebar/Topbar (dashboard)
-    marketing/    homepage/contact/features sections
-    auth/         AuthForm, ProtectedRoute
-    reports/      report-domain components (form, table, badges, actions)
-    dashboard/    shared building blocks for all 4 role dashboards
-    accounts/     admin user-management components
-  lib/            api client, error helpers
-  store/          Zustand auth store
-  types/          shared TypeScript types matching the backend's API shape
-```
+1. Import this repo into Vercel - the Next.js framework preset is
+   auto-detected, no build configuration needed.
+2. In Project Settings → Environment Variables, set `NEXT_PUBLIC_API_URL`
+   to the deployed backend's API URL (e.g. `https://api.yourdomain.com/api`)
+   for Production, Preview, and Development.
+3. Deploy. On the backend, make sure `CORS_ALLOWED_ORIGINS` includes this
+   project's Vercel domain(s) (and any custom domain you attach) - see the
+   backend README.
 
-## Build
-
-```bash
-npm run build
-npm run start
-```
+`NEXT_PUBLIC_*` variables are baked in at build time, so changing this
+value in Vercel requires a redeploy to take effect.
