@@ -29,19 +29,20 @@ export interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
 }
 
 const variantClasses: Record<BadgeVariant, string> = {
-  // severity: low=green, medium=blue, high=amber, critical=red
-  low: "bg-accent/15 text-accent border border-accent/30",
+  // severity: low=success(green), medium=blue, high=amber, critical=danger(red)
+  low: "bg-success/15 text-success border border-success/30",
   medium: "bg-accent-blue/15 text-accent-blue border border-accent-blue/30",
   high: "bg-amber/15 text-amber border border-amber/30",
   critical: "bg-danger/15 text-danger border border-danger/30",
   urgent: "bg-danger/15 text-danger border border-danger/30",
 
-  // status
-  new: "bg-muted/15 text-muted border border-muted/30",
+  // status: new=indigo, in_review=blue, verified=cyan, assigned=amber,
+  // resolved=success(green), closed=muted(slate)
+  new: "bg-accent/15 text-accent border border-accent/30",
   in_review: "bg-accent-blue/15 text-accent-blue border border-accent-blue/30",
-  verified: "bg-accent/15 text-accent border border-accent/30",
+  verified: "bg-cyan/15 text-cyan border border-cyan/30",
   assigned: "bg-amber/15 text-amber border border-amber/30",
-  resolved: "bg-accent/15 text-accent border border-accent/30",
+  resolved: "bg-success/15 text-success border border-success/30",
   closed: "bg-muted/15 text-muted border border-muted/30",
 
   // role

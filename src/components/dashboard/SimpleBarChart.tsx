@@ -18,10 +18,10 @@ export interface ChartDatum {
 }
 
 const tooltipStyle = {
-  background: "#161C28",
-  border: "1px solid #232B39",
+  background: "#111B34",
+  border: "1px solid #1E2A45",
   borderRadius: 8,
-  color: "#E6EDF3",
+  color: "#FFFFFF",
   fontSize: 13,
 };
 
@@ -33,26 +33,26 @@ export function SimpleBarChart({ data }: { data: ChartDatum[] }) {
   return (
     <ResponsiveContainer width="100%" height={240}>
       <BarChart data={data} barCategoryGap="30%">
-        <CartesianGrid stroke="#232B39" strokeDasharray="3 3" vertical={false} />
+        <CartesianGrid stroke="#1E2A45" strokeDasharray="3 3" vertical={false} />
         <XAxis
           dataKey="name"
-          stroke="#8B98A5"
+          stroke="#64748B"
           fontSize={12}
           tickLine={false}
-          axisLine={{ stroke: "#232B39" }}
+          axisLine={{ stroke: "#1E2A45" }}
         />
         <YAxis
-          stroke="#8B98A5"
+          stroke="#64748B"
           fontSize={12}
           tickLine={false}
           axisLine={false}
           allowDecimals={false}
           width={28}
         />
-        <Tooltip contentStyle={tooltipStyle} cursor={{ fill: "rgba(230,237,243,0.04)" }} />
+        <Tooltip contentStyle={tooltipStyle} cursor={{ fill: "rgba(255,255,255,0.04)" }} />
         <Bar dataKey="value" radius={[4, 4, 0, 0]} maxBarSize={48}>
           {data.map((entry) => (
-            <Cell key={entry.name} fill={entry.color ?? "#00FF9C"} />
+            <Cell key={entry.name} fill={entry.color ?? "#818CF8"} />
           ))}
         </Bar>
       </BarChart>

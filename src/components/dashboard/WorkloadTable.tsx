@@ -10,7 +10,7 @@ import type { WorkloadRow } from "@/types/report";
 function loadTone(open: number): string {
   if (open >= 5) return "text-danger";
   if (open >= 3) return "text-amber";
-  return "text-accent";
+  return "text-success";
 }
 
 export function WorkloadTable({ rows }: { rows: WorkloadRow[] }) {

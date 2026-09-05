@@ -4,10 +4,10 @@ import { Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip } from "recha
 import type { ChartDatum } from "./SimpleBarChart";
 
 const tooltipStyle = {
-  background: "#161C28",
-  border: "1px solid #232B39",
+  background: "#111B34",
+  border: "1px solid #1E2A45",
   borderRadius: 8,
-  color: "#E6EDF3",
+  color: "#FFFFFF",
   fontSize: 13,
 };
 
@@ -25,7 +25,7 @@ export function SimpleDonutChart({ data }: { data: ChartDatum[] }) {
           innerRadius={56}
           outerRadius={88}
           paddingAngle={2}
-          stroke="#0A0E14"
+          stroke="#0B1220"
           strokeWidth={2}
         >
           {data.map((entry, i) => (
@@ -36,7 +36,7 @@ export function SimpleDonutChart({ data }: { data: ChartDatum[] }) {
         <Legend
           verticalAlign="bottom"
           height={32}
-          formatter={(value) => <span style={{ color: "#C9D1D9", fontSize: 12 }}>{value}</span>}
+          formatter={(value) => <span style={{ color: "#94A3B8", fontSize: 12 }}>{value}</span>}
         />
       </PieChart>
     </ResponsiveContainer>

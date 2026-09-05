@@ -19,7 +19,7 @@ export function StatCard({ icon, label, value, trend, className }: StatCardProps
         {trend && <p className="mt-1 text-xs text-muted">{trend}</p>}
       </div>
       {icon && (
-        <div className="shrink-0 rounded-lg bg-surface-raised p-2 text-accent">{icon}</div>
+        <div className="shrink-0 rounded-xl bg-accent-gradient-soft p-2.5 text-accent">{icon}</div>
       )}
     </Card>
   );

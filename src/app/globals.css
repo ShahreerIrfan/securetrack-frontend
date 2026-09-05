@@ -1,20 +1,32 @@
 @import "tailwindcss";
 
 :root {
-  --color-background: #0a0e14;
-  --color-surface: #10151f;
-  --color-surface-raised: #161c28;
-  --color-border: #232b39;
-  --color-foreground: #e6edf3;
-  --color-muted: #8b98a5;
-  /* lighter body-copy gray from the SecureTrack marketing design (#C9D1D9) -
-     distinct from --color-muted, which is for de-emphasized dashboard UI */
-  --color-copy: #c9d1d9;
+  /* Dashboard/operator-console palette - matches the admin-dashboard.svg
+     reference exactly (navy + indigo/blue gradient), used by the whole
+     logged-in shell (Sidebar/Topbar/dashboard pages) and by extension
+     the login/register pages that lead into it. The marketing site below
+     has its own separate palette and never references these. */
+  --color-background: #0b1220;
+  --color-surface: #111b34; /* cards, panels */
+  --color-sidebar: #0d1428; /* sidebar only - distinct from card surface */
+  --color-surface-raised: #16213d; /* hover/elevated states */
+  --color-border: #1e2a45;
+  --color-foreground: #ffffff;
+  --color-muted: #64748b; /* tertiary text, axis labels */
+  --color-copy: #94a3b8; /* secondary text, card labels */
 
-  --color-accent: #00ff9c;
-  --color-accent-blue: #00c2ff;
-  --color-danger: #ff4757;
-  --color-amber: #ffb020;
+  --color-accent: #818cf8; /* solid indigo - chrome/links/focus */
+  --color-accent-blue: #3b82f6; /* medium severity, in_review status */
+  --color-success: #34d399; /* low severity, resolved/closed-positive */
+  --color-cyan: #22d3ee; /* verified status */
+  --color-danger: #f87171; /* critical/urgent, admin role */
+  --color-amber: #fbbf24; /* high severity, assigned status */
+
+  /* Two-tone gradient used for the logo mark, active-nav accent bar, and
+     primary icon badges - the single visual signature of this theme. */
+  --color-accent-grad-from: #6366f1;
+  --color-accent-grad-to: #3b82f6;
+
   --font-sans: var(--font-inter);
 
   /* Marketing-site palette, sampled from the reference design. Kept as a
@@ -35,6 +47,7 @@
 @theme inline {
   --color-background: var(--color-background);
   --color-surface: var(--color-surface);
+  --color-sidebar: var(--color-sidebar);
   --color-surface-raised: var(--color-surface-raised);
   --color-border: var(--color-border);
   --color-foreground: var(--color-foreground);
@@ -42,6 +55,8 @@
   --color-copy: var(--color-copy);
   --color-accent: var(--color-accent);
   --color-accent-blue: var(--color-accent-blue);
+  --color-success: var(--color-success);
+  --color-cyan: var(--color-cyan);
   --color-danger: var(--color-danger);
   --color-amber: var(--color-amber);
   --color-ink: var(--color-ink);
@@ -64,6 +79,26 @@
   background-image: linear-gradient(90deg, var(--color-brand) 0%, var(--color-brand-2) 100%);
   background-clip: text;
   color: transparent;
+}
+
+/* Dashboard's own two-tone accent - logo mark, active-nav bar, primary
+   icon badges. Distinct from bg-brand-gradient above (different colors,
+   different product surface). */
+@utility bg-accent-gradient {
+  background-image: linear-gradient(
+    135deg,
+    var(--color-accent-grad-from) 0%,
+    var(--color-accent-grad-to) 100%
+  );
+}
+
+/* Same gradient at low opacity, for icon-badge fills sitting on a card. */
+@utility bg-accent-gradient-soft {
+  background-image: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--color-accent-grad-from) 18%, transparent) 0%,
+    color-mix(in srgb, var(--color-accent-grad-to) 18%, transparent) 100%
+  );
 }
 
 body {

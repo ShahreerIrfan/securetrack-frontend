@@ -31,27 +31,28 @@ export const categoryLabels: Record<Category, string> = {
   other: "Other",
 };
 
-// Same hex values Badge.tsx uses for these variants - kept in sync so a
-// chart slice and a badge for the same severity/status always agree.
+// Same hex values Badge.tsx's variantClasses resolve to (via the
+// --color-* tokens in globals.css) - kept in sync so a chart slice and a
+// badge for the same severity/status always agree.
 export const severityColors: Record<Severity, string> = {
-  low: "#00FF9C",
-  medium: "#00C2FF",
-  high: "#FFB020",
-  critical: "#FF4757",
+  low: "#34D399",
+  medium: "#3B82F6",
+  high: "#FBBF24",
+  critical: "#F87171",
 };
 
 export const statusColors: Record<ReportStatus, string> = {
-  new: "#8B98A5",
-  in_review: "#00C2FF",
-  verified: "#00FF9C",
-  assigned: "#FFB020",
-  resolved: "#00FF9C",
-  closed: "#8B98A5",
+  new: "#818CF8",
+  in_review: "#3B82F6",
+  verified: "#22D3EE",
+  assigned: "#FBBF24",
+  resolved: "#34D399",
+  closed: "#64748B",
 };
 
 export const priorityColors: Record<Priority, string> = {
-  low: "#00FF9C",
-  medium: "#00C2FF",
-  high: "#FFB020",
-  urgent: "#FF4757",
+  low: "#34D399",
+  medium: "#3B82F6",
+  high: "#FBBF24",
+  urgent: "#F87171",
 };

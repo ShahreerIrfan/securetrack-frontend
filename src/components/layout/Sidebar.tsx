@@ -20,9 +20,11 @@ export function Sidebar() {
   const links = role ? roleNavLinks[role] : [];
 
   return (
-    <aside className="flex h-full w-60 shrink-0 flex-col border-r border-border bg-surface">
-      <div className="flex items-center gap-2 px-5 py-5">
-        <ShieldCheck size={22} className="text-accent" />
+    <aside className="flex h-full w-60 shrink-0 flex-col border-r border-border bg-sidebar">
+      <div className="flex items-center gap-2.5 px-5 py-5">
+        <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent-gradient-soft">
+          <ShieldCheck size={18} className="text-accent" />
+        </span>
         <span className="text-lg font-semibold text-foreground">SecureTrack</span>
       </div>
       <nav className="flex-1 space-y-1 px-3">
@@ -34,12 +36,18 @@ export function Sidebar() {
               key={link.href}
               href={link.href}
               className={clsx(
-                "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                "relative flex items-center gap-3 rounded-lg py-2 pl-4 pr-3 text-sm font-medium transition-colors",
                 active
-                  ? "bg-accent/15 text-accent"
+                  ? "bg-accent-gradient-soft text-accent"
                   : "text-muted hover:bg-surface-raised hover:text-foreground",
               )}
             >
+              {active && (
+                <span
+                  aria-hidden
+                  className="absolute inset-y-1 left-0 w-0.75 rounded-full bg-accent-gradient"
+                />
+              )}
               <Icon size={18} />
               {link.label}
             </Link>
