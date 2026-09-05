@@ -1,16 +1,16 @@
 "use client";
 
-import { ReactNode } from "react";
+import { Fragment, ReactNode, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { CalendarClock, Eye, FileSearch } from "lucide-react";
+import { CalendarClock, ChevronDown, Eye, FileSearch, ShieldAlert } from "lucide-react";
 import clsx from "clsx";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Avatar } from "@/components/ui/Avatar";
 import { SeverityBadge } from "./SeverityBadge";
 import { StatusBadge } from "./StatusBadge";
 import { PriorityBadge } from "./PriorityBadge";
-import { categoryLabels, severityColors } from "./labels";
+import { categoryLabels, severityColors, vulnerabilityTypeLabels } from "./labels";
 import type { Report } from "@/types/report";
 
 export interface ReportTableProps {
@@ -20,7 +20,8 @@ export interface ReportTableProps {
   actions?: (report: Report) => ReactNode;
   emptyState?: ReactNode;
   /** Drops the lower-priority columns for tight embeddings (dashboard
-   * queues) where the full set would overflow. */
+   * queues) where the full set would overflow. Selection, row numbers
+   * and the extra classification columns only appear outside compact. */
   compact?: boolean;
 }
 
@@ -37,8 +38,26 @@ function formatDay(iso: string): string {
 const headCell =
   "px-4 py-2.5 text-left text-[10px] font-semibold uppercase tracking-[0.12em] text-muted";
 
+/** Small coloured square that stands in for a thumbnail - tinted by
+ * severity so the same "how bad is this" signal from the row edge in
+ * the old design still reads at a glance, just as an icon instead. */
+function ReportIcon({ severity }: { severity: Report["severity"] }) {
+  const color = severityColors[severity];
+  return (
+    <span
+      aria-hidden
+      className="flex size-9 shrink-0 items-center justify-center rounded-lg"
+      style={{ backgroundColor: `color-mix(in srgb, ${color} 16%, transparent)`, color }}
+    >
+      <ShieldAlert size={16} />
+    </span>
+  );
+}
+
 export function ReportTable({ reports, actions, emptyState, compact = false }: ReportTableProps) {
   const router = useRouter();
+  const [selected, setSelected] = useState<Set<number>>(new Set());
+  const [expanded, setExpanded] = useState<number | null>(null);
 
   if (reports.length === 0) {
     return (
@@ -52,12 +71,42 @@ export function ReportTable({ reports, actions, emptyState, compact = false }: R
     );
   }
 
+  const allSelected = reports.length > 0 && reports.every((r) => selected.has(r.id));
+
+  const toggleAll = () => {
+    setSelected(allSelected ? new Set() : new Set(reports.map((r) => r.id)));
+  };
+
+  const toggleOne = (id: number) => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
   return (
     <div className="overflow-x-auto rounded-xl border border-border bg-surface">
       <table className="w-full min-w-max border-collapse text-sm">
         <thead>
           <tr className="border-b border-border bg-surface-raised/40">
+            {!compact && (
+              <th className={clsx(headCell, "w-10")}>
+                <input
+                  type="checkbox"
+                  aria-label="Select all reports"
+                  checked={allSelected}
+                  onChange={toggleAll}
+                  className="size-3.5 rounded border-border accent-accent"
+                />
+              </th>
+            )}
+            {!compact && <th className={headCell}>SL</th>}
             <th className={headCell}>Report</th>
+            {!compact && <th className={headCell}>Reported By</th>}
+            {!compact && <th className={headCell}>Category</th>}
+            {!compact && <th className={headCell}>Type</th>}
             <th className={headCell}>Severity</th>
             <th className={headCell}>Status</th>
             {!compact && <th className={headCell}>Priority</th>}
@@ -69,96 +118,164 @@ export function ReportTable({ reports, actions, emptyState, compact = false }: R
           </tr>
         </thead>
         <tbody>
-          {reports.map((report) => (
-            <tr
-              key={report.id}
-              onClick={() => router.push(`/dashboard/reports/${report.id}`)}
-              className="group cursor-pointer border-b border-border/50 transition-colors last:border-b-0 hover:bg-surface-raised/50"
-            >
-              {/* The severity colour lives on the row edge rather than in
-                  yet another chip - it turns the list into something you
-                  can scan vertically for hot spots. */}
-              <td
-                className="border-l-2 py-3 pl-4 pr-4 transition-[border-color]"
-                style={{ borderLeftColor: severityColors[report.severity] }}
+          {reports.map((report, i) => (
+            <Fragment key={report.id}>
+              <tr
+                onClick={() => router.push(`/dashboard/reports/${report.id}`)}
+                className="group cursor-pointer border-b border-border/50 transition-colors last:border-b-0 hover:bg-surface-raised/50"
               >
-                <div className="max-w-md">
-                  <p className="truncate font-medium text-foreground transition-colors group-hover:text-accent">
-                    {report.title}
-                  </p>
-                  <p className="mt-0.5 truncate text-xs text-muted">
-                    #{report.id} · {categoryLabels[report.category]}
-                    {!compact && report.description ? ` · ${report.description}` : ""}
-                  </p>
-                </div>
-              </td>
+                {!compact && (
+                  <td
+                    className="px-4 py-3"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <input
+                      type="checkbox"
+                      aria-label={`Select report: ${report.title}`}
+                      checked={selected.has(report.id)}
+                      onChange={() => toggleOne(report.id)}
+                      className="size-3.5 rounded border-border accent-accent"
+                    />
+                  </td>
+                )}
 
-              <td className="px-4 py-3">
-                <SeverityBadge severity={report.severity} />
-              </td>
+                {!compact && (
+                  <td className="px-4 py-3 text-xs text-muted">{i + 1}</td>
+                )}
 
-              <td className="px-4 py-3">
-                <StatusBadge status={report.status} />
-              </td>
-
-              {!compact && (
-                <td className="px-4 py-3">
-                  <PriorityBadge priority={report.priority} />
+                <td className="py-3 pl-4 pr-4">
+                  <div className="flex max-w-md items-center gap-3">
+                    <ReportIcon severity={report.severity} />
+                    <div className="min-w-0">
+                      <p className="truncate font-medium text-foreground transition-colors group-hover:text-accent">
+                        {report.title}
+                      </p>
+                      <p className="mt-0.5 truncate text-xs text-muted">
+                        #{report.id}
+                        {compact ? ` · ${categoryLabels[report.category]}` : ""}
+                      </p>
+                    </div>
+                  </div>
                 </td>
-              )}
 
-              {!compact && (
-                <td className="px-4 py-3">
-                  {report.assigned_to ? (
+                {!compact && (
+                  <td className="px-4 py-3">
                     <span className="inline-flex items-center gap-2">
-                      <Avatar user={report.assigned_to} size="sm" />
-                      <span className="text-xs text-copy">
-                        {report.assigned_to.first_name}
+                      <Avatar user={report.created_by} size="sm" />
+                      <span className="text-xs text-copy">{report.created_by.first_name}</span>
+                    </span>
+                  </td>
+                )}
+
+                {!compact && (
+                  <td className="px-4 py-3 text-xs text-copy">
+                    {categoryLabels[report.category]}
+                  </td>
+                )}
+
+                {!compact && (
+                  <td className="px-4 py-3 text-xs text-copy">
+                    {vulnerabilityTypeLabels[report.vulnerability_type]}
+                  </td>
+                )}
+
+                <td className="px-4 py-3">
+                  <SeverityBadge severity={report.severity} />
+                </td>
+
+                <td className="px-4 py-3">
+                  <StatusBadge status={report.status} />
+                </td>
+
+                {!compact && (
+                  <td className="px-4 py-3">
+                    <PriorityBadge priority={report.priority} />
+                  </td>
+                )}
+
+                {!compact && (
+                  <td className="px-4 py-3">
+                    {report.assigned_to ? (
+                      <span className="inline-flex items-center gap-2">
+                        <Avatar user={report.assigned_to} size="sm" />
+                        <span className="text-xs text-copy">
+                          {report.assigned_to.first_name}
+                        </span>
                       </span>
+                    ) : (
+                      <span className="text-xs text-muted">Unassigned</span>
+                    )}
+                  </td>
+                )}
+
+                <td className="whitespace-nowrap px-4 py-3 text-xs">
+                  {compact ? (
+                    <span className="text-muted">{formatDay(report.created_at)}</span>
+                  ) : report.due_date ? (
+                    <span
+                      className={clsx(
+                        "inline-flex items-center gap-1.5",
+                        isOverdue(report) ? "font-semibold text-danger" : "text-copy",
+                      )}
+                    >
+                      <CalendarClock size={13} />
+                      {formatDay(report.due_date)}
                     </span>
                   ) : (
-                    <span className="text-xs text-muted">Unassigned</span>
+                    <span className="text-muted">—</span>
                   )}
                 </td>
-              )}
 
-              <td className="whitespace-nowrap px-4 py-3 text-xs">
-                {compact ? (
-                  <span className="text-muted">{formatDay(report.created_at)}</span>
-                ) : report.due_date ? (
-                  <span
-                    className={clsx(
-                      "inline-flex items-center gap-1.5",
-                      isOverdue(report) ? "font-semibold text-danger" : "text-copy",
+                <td className="px-4 py-3">
+                  {/* Stops an action click from also firing the row's
+                      navigate-to-detail handler. */}
+                  <div
+                    className="flex items-center justify-end gap-1.5"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <Link
+                      href={`/dashboard/reports/${report.id}`}
+                      aria-label={`View report: ${report.title}`}
+                      title="View report"
+                      className="inline-flex items-center justify-center rounded-lg border border-border p-1.5 text-muted transition-colors hover:border-accent hover:text-accent"
+                    >
+                      <Eye size={15} />
+                    </Link>
+                    {actions?.(report)}
+                    {!compact && (
+                      <button
+                        type="button"
+                        aria-label={expanded === report.id ? "Collapse row" : "Expand row"}
+                        onClick={() =>
+                          setExpanded((prev) => (prev === report.id ? null : report.id))
+                        }
+                        className="inline-flex items-center justify-center rounded-lg border border-border p-1.5 text-muted transition-colors hover:border-accent hover:text-accent"
+                      >
+                        <ChevronDown
+                          size={15}
+                          className={clsx(
+                            "transition-transform",
+                            expanded === report.id && "rotate-180",
+                          )}
+                        />
+                      </button>
                     )}
-                  >
-                    <CalendarClock size={13} />
-                    {formatDay(report.due_date)}
-                  </span>
-                ) : (
-                  <span className="text-muted">—</span>
-                )}
-              </td>
+                  </div>
+                </td>
+              </tr>
 
-              <td className="px-4 py-3">
-                {/* Stops an action click from also firing the row's
-                    navigate-to-detail handler. */}
-                <div
-                  className="flex items-center justify-end gap-2"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <Link
-                    href={`/dashboard/reports/${report.id}`}
-                    aria-label={`View report: ${report.title}`}
-                    title="View report"
-                    className="inline-flex items-center justify-center rounded-lg border border-border p-1.5 text-muted transition-colors hover:border-accent hover:text-accent"
-                  >
-                    <Eye size={15} />
-                  </Link>
-                  {actions?.(report)}
-                </div>
-              </td>
-            </tr>
+              {!compact && expanded === report.id && (
+                <tr className="border-b border-border/50 bg-surface-raised/30">
+                  <td colSpan={11} className="px-4 py-4 pl-16">
+                    <p className="max-w-3xl whitespace-pre-line text-sm leading-relaxed text-copy">
+                      {report.description || (
+                        <span className="text-muted">No description provided.</span>
+                      )}
+                    </p>
+                  </td>
+                </tr>
+              )}
+            </Fragment>
           ))}
         </tbody>
       </table>

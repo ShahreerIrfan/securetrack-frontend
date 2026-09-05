@@ -8,14 +8,14 @@ import { severityLabels } from "./labels";
  * glow. Status and priority deliberately render quieter so three
  * different signals never compete as three identical pills. */
 const styles: Record<Severity, string> = {
-  low: "bg-accent/10 text-accent ring-accent/25",
+  low: "bg-success/10 text-success ring-success/25",
   medium: "bg-accent-blue/10 text-accent-blue ring-accent-blue/25",
   high: "bg-amber/12 text-amber ring-amber/30 shadow-[0_0_12px_-4px_var(--color-amber)]",
   critical: "bg-danger/12 text-danger ring-danger/35 shadow-[0_0_14px_-4px_var(--color-danger)]",
 };
 
 const dots: Record<Severity, string> = {
-  low: "bg-accent",
+  low: "bg-success",
   medium: "bg-accent-blue",
   high: "bg-amber",
   critical: "bg-danger",

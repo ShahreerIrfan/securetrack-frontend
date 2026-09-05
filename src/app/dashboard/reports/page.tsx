@@ -2,16 +2,28 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { FileSearch, LayoutGrid, Plus, Table2 } from "lucide-react";
+import {
+  CheckCircle2,
+  Clock,
+  FileSearch,
+  FileStack,
+  LayoutGrid,
+  Pencil,
+  Plus,
+  ShieldAlert,
+  Table2,
+  Trash2,
+} from "lucide-react";
 import clsx from "clsx";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { ReportFilters, ReportFiltersState } from "@/components/reports/ReportFilters";
 import { ReportTable } from "@/components/reports/ReportTable";
 import { ReportCard } from "@/components/reports/ReportCard";
-import { Button, buttonClassName } from "@/components/ui/Button";
+import { buttonClassName } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Skeleton } from "@/components/ui/Skeleton";
+import { StatCard } from "@/components/ui/StatCard";
 import { useToast } from "@/components/ui/ToastProvider";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { api } from "@/lib/api";
@@ -26,6 +38,10 @@ function canModify(report: Report, userId: number, role: string): boolean {
   return report.created_by.id === userId && report.status === "new";
 }
 
+function isOpen(report: Report): boolean {
+  return report.status !== "resolved" && report.status !== "closed";
+}
+
 export default function ReportsPage() {
   const toast = useToast();
   const user = useAuthStore((s) => s.user);
@@ -34,9 +50,12 @@ export default function ReportsPage() {
     severity: "",
     status: "",
     priority: "",
+    category: "",
+    vulnerabilityType: "",
   });
   const debouncedSearch = useDebouncedValue(filters.search, 300);
   const [reports, setReports] = useState<Report[] | null>(null);
+  const [allReports, setAllReports] = useState<Report[] | null>(null);
   const [view, setView] = useState<ViewMode>("table");
 
   const fetchReports = () => {
@@ -45,6 +64,8 @@ export default function ReportsPage() {
     if (filters.severity) params.severity = filters.severity;
     if (filters.status) params.status = filters.status;
     if (filters.priority) params.priority = filters.priority;
+    if (filters.category) params.category = filters.category;
+    if (filters.vulnerabilityType) params.vulnerability_type = filters.vulnerabilityType;
 
     let cancelled = false;
     api.get<Report[]>("/reports/", { params }).then((res) => {
@@ -55,7 +76,21 @@ export default function ReportsPage() {
     };
   };
 
-  useEffect(fetchReports, [debouncedSearch, filters.severity, filters.status, filters.priority]);
+  // Stat cards always reflect everything visible to this user, independent
+  // of the filters/search applied to the table below.
+  const fetchStats = () => {
+    api.get<Report[]>("/reports/").then((res) => setAllReports(res.data));
+  };
+
+  useEffect(fetchReports, [
+    debouncedSearch,
+    filters.severity,
+    filters.status,
+    filters.priority,
+    filters.category,
+    filters.vulnerabilityType,
+  ]);
+  useEffect(fetchStats, []);
 
   const handleDelete = async (report: Report) => {
     if (!confirm(`Delete report "${report.title}"? This cannot be undone.`)) return;
@@ -63,15 +98,66 @@ export default function ReportsPage() {
       await api.delete(`/reports/${report.id}/`);
       toast.success("Report deleted");
       fetchReports();
+      fetchStats();
     } catch (err) {
       toast.error(extractErrorMessage(err));
     }
   };
 
+  const total = allReports?.length ?? null;
+  const resolved = allReports?.filter((r) => r.status === "resolved" || r.status === "closed").length ?? null;
+  const open = allReports?.filter(isOpen).length ?? null;
+  const critical = allReports?.filter((r) => r.severity === "critical" && isOpen(r)).length ?? null;
+
+  // StatCard renders its value inside a <p> - an inline placeholder here
+  // (not Skeleton's <div>) keeps the markup valid while stats load.
+  const statSkeleton = <span className="inline-block h-6 w-8 animate-pulse rounded bg-surface-raised align-middle" />;
+
   return (
     <ProtectedRoute>
       <DashboardLayout title="Reports">
         <div className="space-y-6">
+          <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+            <StatCard
+              icon={<FileStack size={18} />}
+              label="Total"
+              value={total ?? statSkeleton}
+            />
+            <StatCard
+              icon={<CheckCircle2 size={18} />}
+              label="Resolved"
+              value={
+                resolved === null ? (
+                  statSkeleton
+                ) : (
+                  <span className="text-success">{resolved}</span>
+                )
+              }
+            />
+            <StatCard
+              icon={<Clock size={18} />}
+              label="Open"
+              value={
+                open === null ? (
+                  statSkeleton
+                ) : (
+                  <span className="text-amber">{open}</span>
+                )
+              }
+            />
+            <StatCard
+              icon={<ShieldAlert size={18} />}
+              label="Critical (open)"
+              value={
+                critical === null ? (
+                  statSkeleton
+                ) : (
+                  <span className="text-danger">{critical}</span>
+                )
+              }
+            />
+          </div>
+
           <div className="flex flex-wrap items-center justify-between gap-3">
             <ReportFilters value={filters} onChange={setFilters} />
             <div className="flex items-center gap-2">
@@ -132,13 +218,25 @@ export default function ReportsPage() {
               actions={(report) =>
                 user &&
                 canModify(report, user.id, user.role) && (
-                  <Button
-                    variant="danger"
-                    className="px-2.5 py-1 text-xs"
-                    onClick={() => handleDelete(report)}
-                  >
-                    Delete
-                  </Button>
+                  <>
+                    <Link
+                      href={`/dashboard/reports/${report.id}/edit`}
+                      aria-label={`Edit report: ${report.title}`}
+                      title="Edit report"
+                      className="inline-flex items-center justify-center rounded-lg border border-border p-1.5 text-muted transition-colors hover:border-accent hover:text-accent"
+                    >
+                      <Pencil size={15} />
+                    </Link>
+                    <button
+                      type="button"
+                      aria-label={`Delete report: ${report.title}`}
+                      title="Delete report"
+                      onClick={() => handleDelete(report)}
+                      className="inline-flex items-center justify-center rounded-lg border border-border p-1.5 text-muted transition-colors hover:border-danger hover:text-danger"
+                    >
+                      <Trash2 size={15} />
+                    </button>
+                  </>
                 )
               }
             />

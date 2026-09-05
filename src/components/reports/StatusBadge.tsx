@@ -6,11 +6,11 @@ import { statusLabels } from "./labels";
  * outlined chip, letting SeverityBadge own the colour in a row. The dot
  * carries the state colour; the text stays neutral. */
 const dots: Record<ReportStatus, string> = {
-  new: "bg-muted",
+  new: "bg-accent",
   in_review: "bg-accent-blue",
-  verified: "bg-accent",
+  verified: "bg-cyan",
   assigned: "bg-amber",
-  resolved: "bg-accent",
+  resolved: "bg-success",
   closed: "bg-muted",
 };
 
